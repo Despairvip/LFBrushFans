@@ -5,6 +5,7 @@ from django.db import models
 
 # Create your models here.
 class Client(models.Model):
+    user_id = models.CharField(max_length=20, default='')
     # 总消费
     consume_gold = models.IntegerField()
     # 联系方式
@@ -17,6 +18,9 @@ class Client(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = "kuaishou_client"
+
 
 class Project(models.Model):
     '''
@@ -26,8 +30,12 @@ class Project(models.Model):
     count_project = models.IntegerField()
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
     combo = models.ManyToManyField('Order_combo', blank=True)
+
     def __str__(self):
         return self.name
+
+    class Meta:
+        db_table = "kuaishou_project"
 
 
 class Order(models.Model):
@@ -59,11 +67,10 @@ class Order(models.Model):
         return self.name
 
     def to_dict(self):
-
-        order_dict ={
+        order_dict = {
             "order_id": self.order_id_num,
             "project_name": self.project.pro_name,
-            "kuaishou_id":self.kuaishou_id,
+            "kuaishou_id": self.kuaishou_id,
             "ordered_num": self.count_init,
             "status_order": self.status,
             "production_link": self.link_works,
@@ -71,6 +78,10 @@ class Order(models.Model):
             "create_order_time": self.create_date
         }
         return order_dict
+
+    class Meta:
+        db_table = "kuaishou_order"
+
 
 class Order_combo(models.Model):
     '''
@@ -83,6 +94,9 @@ class Order_combo(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        db_table = "kuaishou_combo"
+
 
 class Old_Order_project(models.Model):
     '''
@@ -94,3 +108,6 @@ class Old_Order_project(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        db_table = "kuaishou_expend_ord"
