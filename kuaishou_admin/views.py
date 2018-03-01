@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import View
 from hashids import Hashids
 
-from kuaishou_admin.models import Order,Project
+from kuaishou_admin.models import Order,Client
 
 # Create your views here.
 
@@ -125,14 +125,22 @@ class ModifyGoldView(View):
     '''修改金币'''
 
     def post(self, request):
-        # 拼接url提取
+        # 获取用户的id
+        user_id = request.POST.get("user_id")
+        gold_num = request.POST.get("gold_num")
 
-        # 更新数据
+        user = Client.objects.filter(user_id=user_id).first()
 
-        # 保存数据
 
-        # 返回结果
-        return HttpResponse("修改金币")
+        if user is not None:
+            user.gold = gold_num
+            user.save(update_filed=['gold'])
+            return JsonResponse(data={"gold_status":True})
+
+        else:
+            return JsonResponse(data={"gold_status":False})
+
+
 
 
 class UserListView(View):
