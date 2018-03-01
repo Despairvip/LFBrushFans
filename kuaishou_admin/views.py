@@ -91,7 +91,7 @@ class EnterSearchView(View):
         hs_order_id = request.POST.get('order_id', None)
 
         if kuaishou_id is not None:
-            orders = Order.objects.all().filter(kuaishou_id=kuaishou_id).order_by('-create_time_order')
+            orders = Order.objects.filter(kuaishou_id=kuaishou_id).all().order_by('-create_time_order')
 
             message = []
             if orders is not None:
@@ -125,12 +125,26 @@ class UserSearchView(View):
 
     def post(self, request):
         '''搜索功能'''
-        # 判断是否为id搜索
+        user_id = request.POST.get("user_id", None)
+        user_name = request.POST.get("user_name")
 
-        # 查询数据库
+        if user_id is not None:
+            orders = Order.objects.filter(client__wechat_id__exact=user_id).all()
+        else:
+            orders = Order.objects.filter(client__name__exact=user_name).all()
 
-        # 返回结果
-        return HttpResponse("id搜索成功")
+        result = []
+        if orders:
+            for order in orders:
+                content = order.to_dict()
+                order_id = order.order_id_num
+                # 把这个id加密
+                hash_order_id = encrypt.encode(order_id)
+                content['user_id'] = hash_order_id
+                result.append(content)
+
+        return JsonResponse(data={"msg": result})
+
 
 
 class ModifyStatusView(View):
@@ -154,7 +168,7 @@ class ModifyGoldView(View):
     '''修改金币'''
 
     def post(self, request):
-        # 获取用户的id
+        # 获取用户的id,和需要修改的金币数
         user_id = request.POST.get("user_id")
         gold_num = request.POST.get("gold_num")
 
