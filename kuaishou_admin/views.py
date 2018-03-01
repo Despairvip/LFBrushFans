@@ -137,15 +137,17 @@ class ModifyStatusView(View):
     '''修改订单状态'''
 
     def post(self, request):
-        # 从拼接的url中获取修改的订单状态
+        order_status = request.POST.get('order_status')
+        order_id = request.POST.get('order_id')
+        order = Order.objects.filter(order_id=order_id).first()
+        if order is None:
+            return JsonResponse({'result': False})
+        else:
+            order.order_status = order_status
+            order.save(update_fields=['status'])
 
+        return JsonResponse({'result': True})
 
-        # 写入数据库
-
-        # 保存数据
-
-        # 返回结果
-        return HttpResponse('修改订单状态')
 
 
 class ModifyGoldView(View):
