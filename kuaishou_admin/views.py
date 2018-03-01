@@ -9,7 +9,7 @@ from django.shortcuts import render, redirect
 from django.views.generic import View
 from hashids import Hashids
 
-from kuaishou_admin.models import Order,Client
+from kuaishou_admin.models import Order, Client
 
 # Create your views here.
 
@@ -26,7 +26,6 @@ class LoginView(View):
         user_name = request.POST.get("user_name")
         password = request.POST.get("pwd")
 
-
         # 认证用户
         user = authenticate(username=user_name, password=password)
         if user is None:
@@ -35,8 +34,7 @@ class LoginView(View):
         # 保存用户登陆session信息
         login(request, user)
         # 跳转到主页
-        return JsonResponse(data={"msg":'保存用户状态成功，可以跳转'})
-
+        return JsonResponse(data={"msg": '保存用户状态成功，可以跳转'})
 
 
 class LogoutView(View):
@@ -45,7 +43,6 @@ class LogoutView(View):
     def post(self, request):
         logout(request)
         return JsonResponse(data={"msg": "退出成功"})
-
 
 
 class RealOrdersView(View):
@@ -83,7 +80,7 @@ class OptionSearchView(View):
                 content['user_id'] = hash_order_id
                 result.append(content)
 
-        return JsonResponse(data={"msg":result})
+        return JsonResponse(data={"msg": result})
 
 
 class EnterSearchView(View):
@@ -131,20 +128,26 @@ class ModifyGoldView(View):
 
         user = Client.objects.filter(user_id=user_id).first()
 
-
         if user is not None:
             user.gold = gold_num
             user.save(update_filed=['gold'])
-            return JsonResponse(data={"gold_status":True})
+            return JsonResponse(data={"gold_status": True})
 
         else:
-            return JsonResponse(data={"gold_status":False})
-
-
+            return JsonResponse(data={"gold_status": False})
 
 
 class UserListView(View):
     '''用户列表'''
 
     def post(self, request):
-        return HttpResponse('用户列表成功')
+        users = Client.objects.all()
+        content = []
+        if users is not None:
+            for user in users:
+                result = user.to_dict()
+                content.append(result)
+        else:
+            return JsonResponse(data={"msg": "没有查到用户信息"})
+
+        return JsonResponse(data={"msg": content})

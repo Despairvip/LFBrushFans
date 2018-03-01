@@ -5,7 +5,7 @@ from django.db import models
 
 # Create your models here.
 class Client(models.Model):
-    user_id = models.CharField(max_length=20, default='')
+    wechat_id = models.CharField(max_length=20, default='')
     # 总消费
     consume_gold = models.IntegerField()
     # 联系方式
@@ -17,6 +17,16 @@ class Client(models.Model):
 
     def __str__(self):
         return self.name
+
+    def to_dict(self):
+        dict = {
+            "user_id": self.wechat_id,
+            "user_name": self.name,
+            "gold": self.gold,
+            "phone_num": self.phone_num,
+            "consume_gold": self.consume_gold
+        }
+        return dict
 
     class Meta:
         db_table = "kuaishou_client"
