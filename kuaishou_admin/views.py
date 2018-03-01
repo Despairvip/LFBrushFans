@@ -73,7 +73,7 @@ class OptionSearchView(View):
         else:
             orders = Order.objects.filter(project__pro_name__exact=detail_pro, status=order_type).all()
 
-        content =None
+        result = []
         if orders:
             for order in orders:
                 content = order.to_dict()
@@ -81,8 +81,9 @@ class OptionSearchView(View):
                 # 把这个id加密
                 hash_order_id = encrypt.encode(order_id)
                 content['user_id'] = hash_order_id
+                result.append(content)
 
-        return JsonResponse(data=content)
+        return JsonResponse(data={"msg":result})
 
 
 class EnterSearchView(View):
@@ -90,33 +91,6 @@ class EnterSearchView(View):
 
     def post(self, request):
         pass
-        # hs_order_id = request.POST.get("order_id")  # 前端协商，字段名
-        # order = encrypt.decode(hs_order_id)
-        #
-        #
-        # kuaishou_id = request.POST.get("kuashou_id")
-        #
-        #
-        # # # 判断传入的内容是什么类型
-        # # # 根据订单号查询
-        # # # 拿到订单解密
-        # # try:
-        # #     orders = Order.objects.filter(Q(order_id_num=content) | Q(kuaishou_id=content))
-        # # except Exception:
-        # #     return render(request, {"msg": "数据库查询失败"})
-        #
-        # order_list = []
-        # if orders is not None:
-        #     for order in orders:
-        #         order_id = order.order_id_num
-        #         # 把这个id加密
-        #         hash_order_id = None
-        #
-        #         id = {"order_id": hash_order_id}
-        #         order_list.append(id)
-        #         order_list.append(order.to_dict())
-        #
-        # return render(request, {"data": order_list})
 
 
 class UserSearchView(View):
