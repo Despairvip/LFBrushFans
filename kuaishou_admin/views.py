@@ -87,7 +87,37 @@ class EnterSearchView(View):
     '''输入框搜索 order'''
 
     def post(self, request):
-        pass
+        kuaishou_id = request.POST.get('kuaishou_id', None)
+        hs_order_id = request.POST.get('order_id', None)
+
+        if kuaishou_id is not None:
+            orders = Order.objects.all().filter(kuaishou_id=kuaishou_id).order_by('-create_time_order')
+
+            message = []
+            if orders is not None:
+                for order in orders:
+                    order_dict = order.to_dict()
+                    order_id = order_dict['order_id']
+                    order_id_new = encrypt.encode(order_id)
+                    order_dict['order_id'] = order_id_new
+                    message.append(order_dict)
+                return JsonResponse(data={'msg': message})
+
+        elif hs_order_id is not None:
+            order_id = encrypt.decode(hs_order_id)
+            orders = Order.objects.all().filter(order_id=order_id).order_by('-create_time_order')
+
+            message = []
+            if orders is not None:
+                for order in orders:
+                    order_dict = order.to_dict()
+                    order_id = order_dict['order_id']
+                    order_id_new = encrypt.encode(order_id)
+                    order_dict['order_id'] = order_id_new
+                    message.append(order_dict)
+                return JsonResponse(data={'msg': message})
+        else:
+            return JsonResponse(data={'msg': False})
 
 
 class UserSearchView(View):

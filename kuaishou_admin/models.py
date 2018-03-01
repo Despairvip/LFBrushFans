@@ -7,13 +7,13 @@ from django.db import models
 class Client(models.Model):
     wechat_id = models.CharField(max_length=20, default='')
     # 总消费
-    consume_gold = models.IntegerField()
+    consume_gold = models.IntegerField(default=0)
     # 联系方式
-    phone_num = models.IntegerField()
+    phone_num = models.IntegerField(default=0)
     # 金币
-    gold = models.IntegerField()
+    gold = models.IntegerField(default=0)
     # 用户名
-    name = models.CharField(max_length=20)
+    name = models.CharField(max_length=20, default=0)
 
     def __str__(self):
         return self.name
