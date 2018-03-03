@@ -8,11 +8,10 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
 from django.views.generic import View
 from hashids import Hashids
-
 from kuaishou_admin.models import Order, Client
+import json
 
 # Create your views here.
-
 
 encrypt = Hashids()
 
@@ -21,20 +20,18 @@ class LoginView(View):
     '''登陆'''
 
     def post(self, request):
-        # return HttpResponse("login success")
-        # 处理注册数据
-        user_name = request.POST.get("user_name")
-        password = request.POST.get("pwd")
-
+        data = json.loads(request.body.decode())
+        user_name = data["user_name"]
+        password = data["pwd"]
         # 认证用户
         user = authenticate(username=user_name, password=password)
         if user is None:
-            return JsonResponse(data={"msg": "密码或用户名错误"})
+            return JsonResponse(data={"msg": " user or id error"})
 
         # 保存用户登陆session信息
         login(request, user)
         # 跳转到主页
-        return JsonResponse(data={"msg": '保存用户状态成功，可以跳转'})
+        return JsonResponse(data={"msg": 'login success'})
 
 
 class LogoutView(View):
@@ -42,7 +39,7 @@ class LogoutView(View):
 
     def post(self, request):
         logout(request)
-        return JsonResponse(data={"msg": "退出成功"})
+        return JsonResponse(data={"msg": "logout success"})
 
 
 class RealOrdersView(View):
@@ -59,10 +56,10 @@ class OptionSearchView(View):
 
     def post(self, request):
         # 获取查询订单的类型(默认是所有订单类型)
-        order_type = request.POST.get("order_status")  # 默认是未开始状态
-        # 获取查询订单的详情类别(默认是所有项目类型)
-        detail_pro = request.POST.get("project")
-        # 0 - '所有项目', 1 - '刷粉订单', 2 - '套餐订单', 3 - '播放订单', 4 - '双击订单'
+        data = json.loads(request.body.decode())
+        detail_pro = data['detail_pro']
+        order_type = data['order_type']
+
         if detail_pro == "所有项目":
 
             orders = Order.objects.filter(status=order_type).all()
@@ -74,10 +71,10 @@ class OptionSearchView(View):
         if orders:
             for order in orders:
                 content = order.to_dict()
-                order_id = order.order_id_num
+                order_id = content['ordered_num']
                 # 把这个id加密
                 hash_order_id = encrypt.encode(order_id)
-                content['user_id'] = hash_order_id
+                content['ordered_num'] = hash_order_id
                 result.append(content)
 
         return JsonResponse(data={"msg": result})
@@ -87,37 +84,28 @@ class EnterSearchView(View):
     '''输入框搜索 order'''
 
     def post(self, request):
-        kuaishou_id = request.POST.get('kuaishou_id', None)
-        hs_order_id = request.POST.get('order_id', None)
-
-        if kuaishou_id is not None:
-            orders = Order.objects.filter(kuaishou_id=kuaishou_id).all().order_by('-create_time_order')
-
-            message = []
-            if orders is not None:
-                for order in orders:
-                    order_dict = order.to_dict()
-                    order_id = order_dict['order_id']
-                    order_id_new = encrypt.encode(order_id)
-                    order_dict['order_id'] = order_id_new
-                    message.append(order_dict)
-                return JsonResponse(data={'msg': message})
-
-        elif hs_order_id is not None:
-            order_id = encrypt.decode(hs_order_id)
-            orders = Order.objects.all().filter(order_id=order_id).order_by('-create_time_order')
-
-            message = []
-            if orders is not None:
-                for order in orders:
-                    order_dict = order.to_dict()
-                    order_id = order_dict['order_id']
-                    order_id_new = encrypt.encode(order_id)
-                    order_dict['order_id'] = order_id_new
-                    message.append(order_dict)
-                return JsonResponse(data={'msg': message})
+        data = json.loads(request.body.decode())
+        if "kuaishou_id" in data:
+            kuaishou_id = data['kuaishou_id']
+            orders = Order.objects.filter(kuaishou_id=kuaishou_id).all()
         else:
-            return JsonResponse(data={'msg': False})
+            hs_order_id = data["order_id"]
+            order_id = encrypt.decode(hs_order_id)[0]
+            print(order_id)
+            orders = Order.objects.filter(order_id_num=order_id).all()
+
+        message = []
+        if orders:
+            for order in orders:
+                content = order.to_dict()
+                order_id = content['ordered_num']
+                hs_order_id = encrypt.encode(order_id)
+                content['ordered_num'] = hs_order_id
+                message.append(content)
+        else:
+            return JsonResponse(data={"msg": "wrong format"})
+
+        return JsonResponse(data={'msg': message})
 
 
 class UserSearchView(View):
@@ -146,22 +134,18 @@ class UserSearchView(View):
         return JsonResponse(data={"msg": result})
 
 
-
 class ModifyStatusView(View):
     '''修改订单状态'''
 
     def post(self, request):
-        order_status = request.POST.get('order_status')
-        order_id = request.POST.get('order_id')
-        order = Order.objects.filter(order_id=order_id).first()
-        if order is None:
-            return JsonResponse({'result': False})
-        else:
-            order.order_status = order_status
-            order.save(update_fields=['status'])
+        data = json.loads(request.body.decode())
 
+        order_status = data["order_status"]
+        hs_order_id = data['order_id']
+        order_id = encrypt.decode(hs_order_id)[0]
+
+        order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
         return JsonResponse({'result': True})
-
 
 
 class ModifyGoldView(View):
