@@ -9,7 +9,7 @@ class Client(models.Model):
     # 总消费
     consume_gold = models.IntegerField(default=0)
     # 联系方式
-    phone_num = models.IntegerField(default=0)
+    phone_num = models.CharField(max_length=15,blank=True)
     # 金币
     gold = models.IntegerField(default=0)
     # 用户名
@@ -39,7 +39,6 @@ class Project(models.Model):
     pro_name = models.CharField(max_length=100, blank=False)
     count_project = models.IntegerField()
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
-    combo = models.ManyToManyField('Order_combo', blank=True)
 
     def __str__(self):
         return self.name

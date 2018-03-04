@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^usersearch$', views.UserSearchView.as_view(), name="usersearch"),
     url(r'^change$', views.ModifyStatusView.as_view(), name="change"),
     url(r'^edit$', views.ModifyGoldView.as_view(), name="edit"),
-    url(r'^usersearch$', views.UserListView.as_view(), name="usersearch"),
+    url(r'^users$', views.UserListView.as_view(), name="usersearch"),
 
 
 ]

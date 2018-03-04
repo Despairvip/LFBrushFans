@@ -1,11 +1,7 @@
 from django.shortcuts import render
 
-# Create your views here.
 from django.contrib.auth import authenticate, login, logout
-from django.core.urlresolvers import reverse
-from django.db.models import Q
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render, redirect
 from django.views.generic import View
 from hashids import Hashids
 from kuaishou_admin.models import Order, Client
@@ -145,6 +141,8 @@ class ModifyStatusView(View):
         order_id = encrypt.decode(hs_order_id)[0]
 
         order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
+        if not order:
+            return JsonResponse(data={"result":True})
         return JsonResponse({'result': True})
 
 
@@ -153,18 +151,15 @@ class ModifyGoldView(View):
 
     def post(self, request):
         # 获取用户的id,和需要修改的金币数
-        user_id = request.POST.get("user_id")
-        gold_num = request.POST.get("gold_num")
+        data = json.loads(request.body.decode())
 
-        user = Client.objects.filter(user_id=user_id).first()
+        user_id = data["user_id"]
+        gold_num = data["gold_num"]
 
-        if user is not None:
-            user.gold = gold_num
-            user.save(update_filed=['gold'])
-            return JsonResponse(data={"gold_status": True})
-
-        else:
-            return JsonResponse(data={"gold_status": False})
+        user = Client.objects.filter(wechat_id=user_id).update(gold=gold_num)
+        if not user:
+            return JsonResponse(data={'gold_status':False})
+        return JsonResponse(data={"gold_status": True})
 
 
 class UserListView(View):
