@@ -109,14 +109,11 @@ class UserSearchView(View):
 
     def post(self, request):
         '''搜索功能'''
-        user_id = request.POST.get("user_id", None)
-        user_name = request.POST.get("user_name")
-
-        if user_id is not None:
-            orders = Order.objects.filter(client__wechat_id__exact=user_id).all()
-        else:
-            orders = Order.objects.filter(client__name__exact=user_name).all()
-
+        data = json.loads(request.body.decode())
+        try:
+            orders = Order.objects.filter(client__wechat_id__exact=data["user_id"]).all()
+        except:
+            orders = Order.objects.filter(client__name__exact=data["user_name"]).all()
         result = []
         if orders:
             for order in orders:
@@ -124,7 +121,7 @@ class UserSearchView(View):
                 order_id = order.order_id_num
                 # 把这个id加密
                 hash_order_id = encrypt.encode(order_id)
-                content['user_id'] = hash_order_id
+                content['order_id_num'] = hash_order_id
                 result.append(content)
 
         return JsonResponse(data={"msg": result})
@@ -142,7 +139,7 @@ class ModifyStatusView(View):
 
         order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
         if not order:
-            return JsonResponse(data={"result":True})
+            return JsonResponse(data={"result": True})
         return JsonResponse({'result': True})
 
 
@@ -158,7 +155,7 @@ class ModifyGoldView(View):
 
         user = Client.objects.filter(wechat_id=user_id).update(gold=gold_num)
         if not user:
-            return JsonResponse(data={'gold_status':False})
+            return JsonResponse(data={'gold_status': False})
         return JsonResponse(data={"gold_status": True})
 
 
@@ -175,4 +172,4 @@ class UserListView(View):
         else:
             return JsonResponse(data={"msg": "没有查到用户信息"})
 
-        return JsonResponse(data={"msg": content})
+        return JsonResponse(data={"users": content})

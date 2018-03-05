@@ -19,5 +19,5 @@ import kuaishou_admin.urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^api/', include(kuaishou_admin.urls, namespace="admin")),
+    url(r'^', include(kuaishou_admin.urls, namespace="admin")),
 ]

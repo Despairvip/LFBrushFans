@@ -76,12 +76,25 @@ class Order(models.Model):
         return self.name
 
     def to_dict(self):
+        status = self.status
+        if status == 0:
+            fettle = '未开始'
+        elif status == 1:
+            fettle = "执行中"
+        elif status == 2:
+            fettle = "已完成"
+        elif status == 3:
+            fettle = '异常单'
+        else:
+            fettle = "以撤单"
         order_dict = {
+
             "order_id": self.order_id_num,
             "project_name": self.project.pro_name,
             "kuaishou_id": self.kuaishou_id,
             "ordered_num": self.count_init,
-            "status_order": self.status,
+
+            "status_order": fettle,
             "production_link": self.link_works,
             "user_name": self.client.name,
             "create_order_time": self.create_date
