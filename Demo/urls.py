@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 import kuaishou_admin.urls
+import kuaishou_app.urls
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^', include(kuaishou_admin.urls, namespace="admin")),
+    url(r'^', include(kuaishou_admin.urls)),
+    url(r'^app/', include(kuaishou_app.urls)),
 ]

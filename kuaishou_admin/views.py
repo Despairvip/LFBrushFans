@@ -17,17 +17,17 @@ class LoginView(View):
 
     def post(self, request):
         data = json.loads(request.body.decode())
-        user_name = data["user_name"]
+        user_name = data["user"]
         password = data["pwd"]
         # 认证用户
         user = authenticate(username=user_name, password=password)
         if user is None:
-            return JsonResponse(data={"msg": " user or id error"})
+            return JsonResponse(data={"msg": False})
 
         # 保存用户登陆session信息
         login(request, user)
         # 跳转到主页
-        return JsonResponse(data={"msg": 'login success'})
+        return JsonResponse(data={"msg": True})
 
 
 class LogoutView(View):
@@ -60,6 +60,19 @@ class OptionSearchView(View):
 
             orders = Order.objects.filter(status=order_type).all()
 
+        elif detail_pro =="套餐订单":
+            orders = Order.objects.filter(type_id=1).all()
+            content = []
+            for order in orders:
+                result = order.to_dict()
+                result["project_name"] = order.combo.name
+                order_id = result['ordered_id']
+                # 把这个id加密
+                hash_order_id = encrypt.encode(order_id)
+                result['ordered_id'] = hash_order_id
+                content.append(result)
+            return JsonResponse(data={"msg": content})
+
         else:
             orders = Order.objects.filter(project__pro_name__exact=detail_pro, status=order_type).all()
 
@@ -67,10 +80,10 @@ class OptionSearchView(View):
         if orders:
             for order in orders:
                 content = order.to_dict()
-                order_id = content['ordered_num']
+                order_id = content['ordered_id']
                 # 把这个id加密
                 hash_order_id = encrypt.encode(order_id)
-                content['ordered_num'] = hash_order_id
+                content['ordered_id'] = hash_order_id
                 result.append(content)
 
         return JsonResponse(data={"msg": result})
@@ -139,8 +152,8 @@ class ModifyStatusView(View):
 
         order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
         if not order:
-            return JsonResponse(data={"result": True})
-        return JsonResponse({'result': True})
+            return JsonResponse(data={"msg": False})
+        return JsonResponse({'msg': True})
 
 
 class ModifyGoldView(View):
@@ -155,8 +168,12 @@ class ModifyGoldView(View):
 
         user = Client.objects.filter(wechat_id=user_id).update(gold=gold_num)
         if not user:
-            return JsonResponse(data={'gold_status': False})
-        return JsonResponse(data={"gold_status": True})
+            return JsonResponse(data={'msg': False})
+
+
+        return JsonResponse(data={'msg': False})
+
+
 
 
 class UserListView(View):
@@ -172,4 +189,4 @@ class UserListView(View):
         else:
             return JsonResponse(data={"msg": "没有查到用户信息"})
 
-        return JsonResponse(data={"users": content})
+        return JsonResponse(data={"msg": content})
