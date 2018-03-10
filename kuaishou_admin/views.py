@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from django.contrib.auth import authenticate, login, logout
@@ -6,8 +7,10 @@ from django.views.generic import View
 from hashids import Hashids
 from kuaishou_admin.models import Order, Client
 import json
+from django.core.paginator import Paginator
 
 # Create your views here.
+from utils.views import LoginRequiredJsonMixin
 
 encrypt = Hashids()
 
@@ -30,7 +33,7 @@ class LoginView(View):
         return JsonResponse(data={"msg": True})
 
 
-class LogoutView(View):
+class LogoutView(View, LoginRequiredJsonMixin):
     '''退出'''
 
     def post(self, request):
@@ -38,58 +41,76 @@ class LogoutView(View):
         return JsonResponse(data={"msg": "logout success"})
 
 
-class RealOrdersView(View):
+class RealOrdersView(View, LoginRequiredJsonMixin):
     '''实时订单查询'''
 
+    # @login_required
     def post(self, request):
         '''实时订单，返回30条数据'''
 
         return HttpResponse("订单查询成功")
 
 
-class OptionSearchView(View):
+class OptionSearchView(View, LoginRequiredJsonMixin):
     '''下拉框搜索'''
-
     def post(self, request):
-        # 获取查询订单的类型(默认是所有订单类型)
-        data = json.loads(request.body.decode())
-        detail_pro = data['detail_pro']
-        order_type = data['order_type']
-
-        if detail_pro == "所有项目":
-
-            orders = Order.objects.filter(status=order_type).all()
-
-        elif detail_pro =="套餐订单":
-            orders = Order.objects.filter(type_id=1).all()
-            content = []
-            for order in orders:
-                result = order.to_dict()
-                result["project_name"] = order.combo.name
-                order_id = result['ordered_id']
-                # 把这个id加密
-                hash_order_id = encrypt.encode(order_id)
-                result['ordered_id'] = hash_order_id
-                content.append(result)
-            return JsonResponse(data={"msg": content})
-
+        if not request.user.is_superuser:
+            return JsonResponse(data={"msg":"用户未登录"})
         else:
-            orders = Order.objects.filter(project__pro_name__exact=detail_pro, status=order_type).all()
+            # 获取查询订单的类型(默认是所有订单类型)
+            data = json.loads(request.body.decode())
 
-        result = []
-        if orders:
+            detail_pro = data.get('detail_pro')
+            order_type = data.get('order_type')
+            page = data.get("page", 1)
+            # 一页几条数据
+            num_page = data.get("num_page", 10)
+
+            try:
+                num_page = int(num_page)
+                page = int(page)
+
+            except Exception as e:
+                print(e)
+
+            if detail_pro == "所有项目" and order_type == "0":
+                orders = Order.objects.all()
+            elif detail_pro == "所有项目":
+                orders = Order.objects.filter(status=order_type).all()
+            elif detail_pro == "套餐订单":
+                orders = Order.objects.filter(type_id=1, status=order_type).all()
+            else:
+                if order_type == '0':
+                    orders = Order.objects.filter(project__pro_name__exact=detail_pro).all()
+                else:
+                    orders = Order.objects.filter(project__pro_name__exact=detail_pro, status=order_type).all()
+
+            result = []
             for order in orders:
-                content = order.to_dict()
-                order_id = content['ordered_id']
-                # 把这个id加密
-                hash_order_id = encrypt.encode(order_id)
-                content['ordered_id'] = hash_order_id
-                result.append(content)
+                if order.project:
+                    content = order.to_dict()
+                    content["project_name"] = order.project.pro_name
+                    order_id = content['order_id']
+                    hs_order_id = encrypt.encode(int(order_id))
+                    content['order_id'] = hs_order_id
+                    result.append(content)
+                else:
 
-        return JsonResponse(data={"msg": result})
+                    content = order.to_dict()
+                    content["project_name"] = order.combo.name
+                    order_id = content['order_id']
+                    hs_order_id = encrypt.encode(int(order_id))
+                    content['order_id'] = hs_order_id
+
+                    result.append(content)
+            p = Paginator(result, num_page)
+            count = p.count
+            pages = p.num_pages
+            pages_ss = p.page(page).object_list
+            return JsonResponse(data={"msg": pages_ss, "count": count, "pages": pages})
 
 
-class EnterSearchView(View):
+class EnterSearchView(View, LoginRequiredJsonMixin):
     '''输入框搜索 order'''
 
     def post(self, request):
@@ -107,9 +128,10 @@ class EnterSearchView(View):
         if orders:
             for order in orders:
                 content = order.to_dict()
-                order_id = content['ordered_num']
-                hs_order_id = encrypt.encode(order_id)
-                content['ordered_num'] = hs_order_id
+                order_id = content['order_id']
+                hs_order_id = encrypt.encode(int(order_id))
+                content['order_id'] = hs_order_id
+
                 message.append(content)
         else:
             return JsonResponse(data={"msg": "wrong format"})
@@ -117,7 +139,7 @@ class EnterSearchView(View):
         return JsonResponse(data={'msg': message})
 
 
-class UserSearchView(View):
+class UserSearchView(View, LoginRequiredJsonMixin):
     '''用户名字/id 搜索'''
 
     def post(self, request):
@@ -133,14 +155,14 @@ class UserSearchView(View):
                 content = order.to_dict()
                 order_id = order.order_id_num
                 # 把这个id加密
-                hash_order_id = encrypt.encode(order_id)
-                content['order_id_num'] = hash_order_id
+                hash_order_id = encrypt.encode(int(order_id))
+                content['order_id'] = hash_order_id
                 result.append(content)
 
         return JsonResponse(data={"msg": result})
 
 
-class ModifyStatusView(View):
+class ModifyStatusView(View, LoginRequiredJsonMixin):
     '''修改订单状态'''
 
     def post(self, request):
@@ -156,7 +178,7 @@ class ModifyStatusView(View):
         return JsonResponse({'msg': True})
 
 
-class ModifyGoldView(View):
+class ModifyGoldView(View, LoginRequiredJsonMixin):
     '''修改金币'''
 
     def post(self, request):
@@ -170,17 +192,14 @@ class ModifyGoldView(View):
         if not user:
             return JsonResponse(data={'msg': False})
 
-
-        return JsonResponse(data={'msg': False})
-
+        return JsonResponse(data={'msg': True})
 
 
-
-class UserListView(View):
+class UserListView(View, LoginRequiredJsonMixin):
     '''用户列表'''
 
     def post(self, request):
-        users = Client.objects.all()
+        users = Client.objects.all().order_by('-gold')
         content = []
         if users is not None:
             for user in users:
@@ -188,5 +207,6 @@ class UserListView(View):
                 content.append(result)
         else:
             return JsonResponse(data={"msg": "没有查到用户信息"})
-
-        return JsonResponse(data={"msg": content})
+        p = Paginator(content, 30)
+        pages_ss = p.page(1).object_list
+        return JsonResponse(data={"msg": pages_ss})
