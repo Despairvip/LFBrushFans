@@ -1,6 +1,3 @@
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import View
@@ -10,7 +7,7 @@ import json
 from django.core.paginator import Paginator
 
 # Create your views here.
-from utils.views import login_required_json
+from utils.views import LoginRequiredJsonMixin
 
 encrypt = Hashids()
 
@@ -41,29 +38,30 @@ class LogoutView(View):
         return JsonResponse(data={"msg": "logout success"})
 
 
-class RealOrdersView(View):
+class RealOrdersView(LoginRequiredJsonMixin, View):
     '''实时订单查询'''
 
     def post(self, request):
         '''实时订单，返回30条数据'''
         if request.user.is_superuser:
-            return JsonResponse(data={"msg":"未登录"})
+            return JsonResponse(data={"msg": "未登录"})
         return HttpResponse("订单查询成功")
 
 
-class OptionSearchView(View):
+class OptionSearchView(LoginRequiredJsonMixin, View):
     '''下拉框搜索'''
 
-    # @login_required_json
     def post(self, request):
-        if not request.user.is_superuser:
-            return JsonResponse(data={"msg": "未登录"})
+        # if not request.user.is_superuser:
+        #     return JsonResponse(data={"msg": "未登录"})
 
         # 获取查询订单的类型(默认是所有订单类型)
         data = json.loads(request.body.decode())
 
         detail_pro = data.get('detail_pro')
+        print(detail_pro)
         order_type = data.get('order_type')
+        print(order_type)
         page = data.get("page", 1)
         # 一页几条数据
         num_page = data.get("num_page", 10)
@@ -79,8 +77,11 @@ class OptionSearchView(View):
             orders = Order.objects.all()
         elif detail_pro == "所有项目":
             orders = Order.objects.filter(status=order_type).all()
+        elif detail_pro == '套餐订单' and order_type == '0':
+            orders = Order.objects.filter(type_id=1).all()
         elif detail_pro == "套餐订单":
             orders = Order.objects.filter(type_id=1, status=order_type).all()
+            print(orders)
         else:
             if order_type == '0':
                 orders = Order.objects.filter(project__pro_name__exact=detail_pro).all()
@@ -112,7 +113,7 @@ class OptionSearchView(View):
         return JsonResponse(data={"msg": pages_ss, "count": count, "pages": pages})
 
 
-class EnterSearchView(View):
+class EnterSearchView(LoginRequiredJsonMixin, View):
     '''输入框搜索 order'''
 
     def post(self, request):
@@ -143,50 +144,51 @@ class EnterSearchView(View):
         return JsonResponse(data={'msg': message})
 
 
-class UserSearchView(View):
+class UserSearchView(LoginRequiredJsonMixin, View):
     '''用户名字/id 搜索'''
 
     def post(self, request):
-        if not request.user.is_superuser:
-            return JsonResponse(data={"msg": "未登录"})
         '''搜索功能'''
         data = json.loads(request.body.decode())
-        try:
-            orders = Order.objects.filter(client__wechat_id__exact=data["user_id"]).all()
-        except:
-            orders = Order.objects.filter(client__name__exact=data["user_name"]).all()
         result = []
-        if orders:
-            for order in orders:
-                content = order.to_dict()
-                order_id = order.order_id_num
-                # 把这个id加密
-                hash_order_id = encrypt.encode(int(order_id))
-                content['order_id'] = hash_order_id
+        print(data.get('user_id'))
+        if data.get('user_id'):
+            user_id = int(data.get("user_id")) - 1000
+            if user_id < 0:
+                return JsonResponse
+            print(user_id)
+            users = Client.objects.filter(id=user_id).all()
+        else:
+            users = Client.objects.filter(name=data.get("user_name")).all()
+
+        if users:
+            for user in users:
+                content = user.to_dict()
                 result.append(content)
 
         return JsonResponse(data={"msg": result})
 
 
-class ModifyStatusView(View):
+class ModifyStatusView(LoginRequiredJsonMixin, View):
     '''修改订单状态'''
 
     def post(self, request):
-        if not request.user.is_superuser:
-            return JsonResponse(data={"msg": "未登录"})
         data = json.loads(request.body.decode())
 
-        order_status = data["order_status"]
-        hs_order_id = data['order_id']
+        order_status = data.get("order_status")
+        hs_order_id = data.get('order_id')
+        print(hs_order_id)
         order_id = encrypt.decode(hs_order_id)[0]
+        print(order_id)
 
         order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
+        print(order)
         if not order:
             return JsonResponse(data={"msg": False})
         return JsonResponse({'msg': True})
 
 
-class ModifyGoldView(View):
+class ModifyGoldView(LoginRequiredJsonMixin, View):
     '''修改金币'''
 
     def post(self, request):
@@ -197,20 +199,22 @@ class ModifyGoldView(View):
 
         user_id = data["user_id"]
         gold_num = data["gold_num"]
-
-        user = Client.objects.filter(wechat_id=user_id).update(gold=gold_num)
+        try:
+            user = Client.objects.filter(id=user_id).update(gold=gold_num)
+        except Exception as e:
+            return JsonResponse(data={"msg": "查不到用户"})
         if not user:
             return JsonResponse(data={'msg': False})
 
         return JsonResponse(data={'msg': True})
 
 
-class UserListView(View):
+class UserListView(LoginRequiredJsonMixin, View):
     '''用户列表'''
 
     def post(self, request):
-        if not request.user.is_superuser:
-            return JsonResponse(data={"msg": "未登录"})
+        # if not request.user.is_superuser:
+        #     return JsonResponse(data={"msg": "未登录"})
         users = Client.objects.all().order_by('-gold')
         content = []
         if users is not None:
