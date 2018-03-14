@@ -18,6 +18,7 @@ class Client(AbstractUser):
 
     avatar = models.CharField(max_length=500, default='', null=True)
     token = models.CharField(max_length=500, default='')
+    unionid = models.CharField(max_length=500,default='')
 
     def __str__(self):
         return self.name
@@ -42,8 +43,8 @@ class Project(models.Model):
     项目表
     '''
     pro_name = models.CharField(max_length=100, blank=False)
-    count_project = models.IntegerField()
-    pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
+    count_project = models.IntegerField(default=0)
+    pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'),null=True)
     img_url = models.CharField(max_length=100, default="")
 
     def __str__(self):

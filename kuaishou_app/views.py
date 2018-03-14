@@ -1,117 +1,357 @@
 import json
 import logging
-import os
-import random
 import re
 
-from alipay import AliPay
+import redis
+import requests
 from django.conf import settings
+from django.db.models import Q
+from django.http import HttpResponseRedirect
 from django.http import JsonResponse
-
-# Create your views here.
 from django.views.generic import View
-from kuaishou_admin.models import Project, Client, Order
-from utils.views import createOrdernumber as create_num, gifshow,Create_alipay_order as create_alipay
 from hashids import Hashids
 
+from kuaishou_admin.models import Project, Client, Order, Order_combo
+from kuaishou_app.models import PayListModel, SaveOpenId
+from utils.tornado_websocket.lib_redis import RedisHelper
+from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
+    socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
+    conditions, DetectionConditions
 
-
-# 实例化一个无水印下载对象
 down = gifshow()
 # 实例化一个加密对象
 q = Hashids()
 # 实例化一个日志对象
 logger_db = logging.getLogger("db")
 
+conn = redis.Redis()
 
-class ClickView(View):
+
+class ClickView(DetectionConditions, View):
     def post(self, request):
-        pass
+        data = json.loads(request.body.decode())
+        works_link = data.get('works')
+        click_num = data.get('click_num')
+        need_gold = data.get('gold')
+        client_id = data.get("user_id")
+        print(client_id)
+        wechat_id = handle_user_id(data.get('user_id'))
+        kuaishou_id = data.get('hands_id')
+        project_id = data.get('project_id')
+        token = data.get("token")
+
+        try:
+            client = Client.objects.filter(token=token).first()
+            if not client:
+                return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        except Exception as e:
+            return JsonResponse(data={"status": 4001, "msg": print(e)})
+        project = Project.objects.filter(id=project_id).first()
+
+        if project is None:
+            return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
+
+        if not conditions(client, need_gold):
+            return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
+        # ----------------订单操作---------------
+        order_id = create_num(wechat_id, project_id)
+        hs_order_id_num = q.encode(int(order_id))
+        msg = {
+            "status_order": "未开始",
+            "ordered_num": click_num,
+            "user_name": client_id,
+            "work_links": works_link,
+            "project_name": project.pro_name,
+            "order_id": hs_order_id_num,
+            "kuaishou_id": kuaishou_id,
+            "create_order_time": socket_create_order_time()
+        }
+        msg_json = json.dumps(msg)
+        obj = RedisHelper()
+
+        obj.public(msg_json)
+        order = Order(gold=need_gold, client=client, kuaishou_id=kuaishou_id, link_works=works_link,
+                      count_init=click_num, project=project, order_id_num=order_id)
+        order.save()
+
+        return JsonResponse(data={'status': 0, "order_num": hs_order_id_num})
 
 
-class PlayView(View):
+class PlayView(DetectionConditions, View):
     def post(self, request):
-        pass
+        data = json.loads(request.body.decode())
+        works_link = data['works']
+        play_num = data['play_num']
+        need_gold = data['gold']
+        project_id = data['project_id']
+        client_id = data.get("user_id")
+        user_id = handle_user_id(data.get('user_id'))
+        kuaishou_id = data['hands_id']
+
+        token = data.get("token")
+
+        try:
+            client = Client.objects.filter(token=token).first()
+            if not client:
+                return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        except Exception as e:
+            return JsonResponse(data={"status": 4001, "msg": print(e)})
+        project = Project.objects.filter(id=project_id).first()
+        if project is None:
+            return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
+
+        if not conditions(client, need_gold):
+            return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
+        # -----------订单处理-------------------
+        order_id = create_num(user_id, project_id)
+        hs_order_id_num = q.encode(int(order_id))
+        msg = {
+            "status_order": "未开始",
+            "ordered_num": play_num,
+            "user_name": client_id,
+            "work_links": works_link,
+            "project_name": project.pro_name,
+            "order_id": hs_order_id_num,
+            "kuaishou_id": kuaishou_id,
+            "create_order_time": socket_create_order_time(),
+        }
+        msg_json = json.dumps(msg)
+        obj = RedisHelper()
+        obj.public(msg_json)
+
+        order = Order(order_id_num=order_id, gold=need_gold, project=project, client=client, count_init=play_num,
+                      link_works=works_link, kuaishou_id=kuaishou_id)
+        order.save()
+
+        return JsonResponse(data={'status': 0, "order_id": hs_order_id_num})
 
 
-class FansView(View):
+class FansView(DetectionConditions, View):
     def post(self, request):
         data = json.loads(request.body.decode())
         hands_id = data.get("hands_id")
         fan_num = data.get("fan_num")
-        gold = int(data.get("gold"))
-        wechat_id = data.get('wechat_id')
-        user = Client.objects.filter(wechat_id=wechat_id).first()
-        pro = Project.objects.filter(pro_name="刷粉丝").first()
+        need_gold = int(data.get("gold"))
+        wechat_id = handle_user_id(data.get('user_id'))
+        project_id = data.get("project_id")
+        client_id = data.get("user_id")
+        token = data.get("token")
 
-        # 判断用户积分
-        user_gold = user.gold
-        consume_gold = user.consume_gold
-        if user_gold < gold:
-            return JsonResponse(data={"msg": "积分不够"})
-        if consume_gold < 0:
-            return JsonResponse(data={"msg": "用户积分为负数"})
+        try:
+            client = Client.objects.filter(token=token).first()
+            if not client:
+                return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        except Exception as e:
+            return JsonResponse(data={"status": 4001, "msg": print(e)})
+        project = Project.objects.filter(id=project_id).first()
 
-        # 生成订单编号
-        order_id_num = create_num(wechat_id, pro.id)
+        if project is None:
+            return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
+
+        if not conditions(client, need_gold):
+            return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
+        order_id = create_num(wechat_id, project_id)
+        hs_order_id_num = q.encode(int(order_id))
+        msg = {
+            "status_order": "未开始",
+            "ordered_num": fan_num,
+            "user_name": client_id,
+            "work_links": None,
+            "project_name": project.pro_name,
+            "order_id": hs_order_id_num,
+            "kuaishou_id": hands_id,
+            "create_order_time": socket_create_order_time(),
+        }
+        msg_json = json.dumps(msg)
+        obj = RedisHelper()
+        obj.public(msg_json)
         # 创建订单
         try:
             order = Order()
-            order.client = user
-            order.project = pro
-            order.gold = gold
+            order.client = client
+            order.project = project
+            order.gold = need_gold
             order.count_init = fan_num
             order.type_id = 0
             order.kuaishou_id = hands_id
-            order.order_id_num = order_id_num
+            order.order_id_num = order_id
 
             order.save()
 
-            user.consume_gold += gold
-            user.gold -= gold
-            user.save()
+            client.consume_gold += need_gold
+            client.gold -= need_gold
+            client.save()
         except Exception as e:
-            user.consume_gold = consume_gold
-            user.gold = gold
-            user.save()
-            return JsonResponse(data={'msg': print(e)})
+            return JsonResponse(data={"status": 4001, 'msg': print(e)})
 
-        user.save()
-        hs_order_id_num = q.encode(int(order_id_num))
-        return JsonResponse(data={'order_num': hs_order_id_num})
+        client.save()
+
+        return JsonResponse(data={'status': True, 'order_num': hs_order_id_num})
 
 
-class IntegralView(View):
+class ConfirmView(DetectionConditions, View):
     def post(self, request):
         data = json.loads(request.body.decode())
-        order_id = data.get('gold')
-        gold = data.get('gold')
+        package_id = data['package_id']
+        need_gold = data['gold']
+        user_id = handle_user_id(data.get('user_id'))
+        works_link = data['works']
+        kuaishou_id = data['hands_id']
+        client_id = data.get("user_id")
 
+        token = data.get("token")
 
-
-
-
-
-class CenterView(View):
-    def post(self, request):
-        data = json.loads(request.body.decode())
-        wechat_id = data.get('wechat_id')
         try:
-            user = Client.objects.filter(wechat_id=wechat_id).first()
+            client = Client.objects.filter(token=token).first()
+            if client is None:
+                return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
-            return JsonResponse(data={'msg': "没有查到用户信息"})
-        content = {
-            "avatar": user.avatar,
-            "user_name": user.name,
-            "hands_id": user.wechat_id,
-            "gold": user.gold
-        }
+            return JsonResponse(data={"status": 4001, "msg": print(e)})
+
+        if not conditions(client, need_gold):
+            return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
+        order_id = create_num(user_id, 100)
+        hs_order_id = q.encode(int(order_id))
+        # ------------订单处理--------------------
+        if package_id in [1, 2, 3, 4, 5, 6]:
+            order_combo = Order_combo.objects.filter(id=package_id).first()
+
+            msg = {
+                "status_order": "未开始",
+                "ordered_num": '',
+                "user_name": client_id,
+                "work_links": works_link,
+                "project_name": order_combo.name,
+                "order_id": hs_order_id,
+                "kuaishou_id": kuaishou_id,
+                "create_order_time": socket_create_order_time(),
+            }
+            msg_json = json.dumps(msg)
+            obj = RedisHelper()
+            obj.public(msg_json)
+            order = Order(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
+                          link_works=works_link, count_init=0, type_id=1)
+
+            order.save()
+        else:
+            return JsonResponse({'status': 4003, 'msg': '套餐不存在'})
+        return JsonResponse({'status': 0, 'order_num': hs_order_id})
+
+
+class IntegralView(DetectionConditions, View):
+    def post(self, request):
+        data = json.loads(request.body.decode())
+        order_id = q.decode(data.get('order_id'))[0]
+        gold = data.get('gold')
+        pay_type = data.get("pay_type")
+        user_id = data.get("user_id")
+        fil_token = data.get("token")
+
+        try:
+            client = Client.objects.filter(id=user_id).first()
+            pay = PayListModel.objects.filter(order_id=order_id).first()
+        except Exception as e:
+            return JsonResponse(data={'status': 4001, "msg": print(e)})
+        if client or pay is None:
+            return JsonResponse(data={'status': 4003, 'msg': "id或订单号出问题"})
+        if pay_type == '0':
+            alipay = create_alipay()
+            while True:
+                response = alipay.api_alipay_trade_query(order_id)  # response是一个字典
+
+                # 判断支付结果
+                code = response.get("code")  # 支付宝接口调用成功或者错误的标志
+                trade_status = response.get("trade_status")  # 用户支付的情况
+
+                if code == "10000" and trade_status == "TRADE_SUCCESS":
+                    # 表示用户支付成功
+                    # 修改订单的状态，变为待评论状态
+                    pay.status = 0
+                    # 更新订单的支付宝交易编号
+                    pay.ddh = response.get("trade_no")
+                    pay.save()
+                    client.gold += gold
+                    client.save()
+                    return JsonResponse({"code": 0, "message": "支付成功"})
+                elif code == "40004" or code == "10000":
+                    # 表示支付宝接口调用暂时失败，（支付宝的支付订单还未生成） 后者 等待用户支付
+                    # 继续查询
+                    continue
+                else:
+                    # 支付失败
+                    # 返回支付失败的通知
+                    return JsonResponse({"code": 3001, "msg": "支付失败"})
+        elif pay_type == 1:
+            wechat_pay = create_wechat()
+            while True:
+                result = wechat_pay.order.query(out_trade_no=order_id)
+                return_code = result.get("return_code")
+                result_code = result.get('result_code')
+                if return_code == "SUCCESS":
+                    return JsonResponse({"status": 3001, "msg": result.get("return_msg")})
+                if return_code == "SUCCESS" and result_code == "SUCCESS":
+                    pay.status = 0
+                    pay.ddh = result.get("transaction_id")
+                    pay.save()
+                    client.gold += gold
+                    client.save()
+                    return JsonResponse({"code": 0, "msg": "支付成功"})
+
+
+class PayApi(View):
+    def post(self, request):
+        data = json.loads(request.body.decode())
+        user_id = handle_user_id(data.get('user_id'))
+        money = data.get("money")
+        pay_type = data.get("pay_type")
+        order_id = create_num(user_id, 1)
+        try:
+            if pay_type == '0':
+                ali_pay = create_alipay()
+                # App支付，将order_string返回给app即可
+
+
+                order_string = ali_pay.api_alipay_trade_app_pay(
+                    out_trade_no=order_id,
+                    total_amount=money,
+                    subject="LFBrushFans%s" % order_id,
+                    notify_url=None  # 可选, 不填则使用默认notify url
+                )
+                print(order_id)
+                hs_order_id = q.encode(int(order_id))
+                return JsonResponse(data={"status": 0, "ali_msg": order_string, "order_id": hs_order_id})
+            wechat_pay = create_wechat()
+            # 统一支付接口
+            result = wechat_pay.order.create(
+                out_trade_no=order_id,
+                trade_type='App',
+                body="LFBrushFans%s" % order_id,
+                total_fee=money,
+                notify_url='http://192.168.0.159:4444/#/home'
+            )
+
+            payment = wechat_pay.order.get_appapi_params(result["prepay_id"])
+            hs_order_id = q.encode(int(order_id))
+            return JsonResponse(data={"status": 0, "wechat_msg": payment, "order_id": hs_order_id})
+        except Exception as e:
+            return JsonResponse({"status": 3001, 'msg': "异常重新尝试"})
+
+
+class CenterView(DetectionConditions, View):
+    def post(self, request):
+        data = json.loads(request.body.decode())
+        user_id = handle_user_id(data.get('user_id'))
+        # token = data.get("token")
+        try:
+            user = Client.objects.filter(id=user_id).first()
+        except Exception as e:
+            return JsonResponse(data={"status": 5003, 'msg': "没有查到用户信息"})
+        content = user.to_dict()
         return JsonResponse(data=content)
-
-
-class ConfirmView(View):
-    def post(self):
-        pass
 
 
 class DownloadView(View):
@@ -122,108 +362,103 @@ class DownloadView(View):
         try:
             photoId = re.search(r'photoId=(\d+)', works).group(1)
         except Exception as e:
-            return JsonResponse(data={"msg":"格式错误"})
+            return JsonResponse(data={"status": 4003, "msg": "格式错误"})
         print(photoId.encode())
         hs_link = down.photo_info(photoId)
         print(type(hs_link))
         print(hs_link)
         link = hs_link["photos"][0]["main_mv_urls"][0]["url"]
-        return JsonResponse(data={'link':link})
+        return JsonResponse(data={"status": 0, 'link': link})
 
 
-class NotesView(View):
+class NotesView(DetectionConditions, View):
     def post(self, request):
         data = json.loads(request.body.decode())
-        wechat_id = data.get("wechat_id")
+        user_id = handle_user_id(data.get('user_id'))
         try:
-            orders = Order.objects.filter(client__wechat_id__exact=wechat_id).all()
+            orders = Order.objects.filter(client__id__exact=user_id).all()
         except Exception as e:
 
-            return JsonResponse(data={'msg': print(e)})
+            return JsonResponse(data={"status": 4001, 'msg': print(e)})
         content = []
         if orders:
             for order in orders:
-                content.append({
-                    "pro_name": order.project.pro_name,
+                result = {
                     "pro_gold": order.gold,
                     "pro_num": order.count_init,
-                    "time": order.create_date
-                })
+                    "time": order.create_date,
+                }
+                if order.project is None:
+                    result['pro_name'] = order.combo.name
+                else:
+                    result["pro_num"] = order.project.pro_name
+                content.append(result)
         else:
-            return JsonResponse(data={"用户没有订单"})
-        return JsonResponse(data={'msg': content})
+            return JsonResponse(data={"status": 5003, "msg": "用户没有订单"})
+        return JsonResponse(data={"status": 0, 'data': content})
 
 
-class NewsView(View):
+class ClientLoginView(View):
     def post(self, request):
         data = json.loads(request.body.decode())
-        hands_id = data.get("hands_id")
-        wechat_id = data.get("wechat_id")
+        code = data['code']
+        secret = settings.SECRET_APP
+        appid = settings.APP_ID
+        if code is not None:
+            res = requests.get(
+                'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code' % (
+                    appid, secret, code))
+        else:
+            return JsonResponse(data={"status": 4003, "msg": 'code错误'})
+        print(res)
+        res_dict = res.json()
+        if res_dict.get('errcode') is not None:
+            return JsonResponse(data={"status": 4003, "msg": res_dict.get("errcode")})
+        res_data_openid = res_dict['openid']
+        token = res_dict['access_token']
+
+        user_info = requests.get('https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s' % (
+            token, res_data_openid)).json()
+
+        client_name = user_info['nickname'].encode('iso-8859-1').decode('utf-8')
+        avatar_url = user_info['headimgurl']
+        unionid = user_info["unionid"]
+        if user_info.get('errcode') is not None:
+            return JsonResponse(data={"status": 6000, "msg": user_info.get("errcode")})
+
+        client = Client.objects.get(Q(unionid=unionid) | Q(name=client_name))
+        if client:
+            return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
+        client = Client()
+        client.name = client_name
+        client.avatar = avatar_url
+        client.token = token
+        client.unionid = unionid
+        client.save()
+        content = client.to_dict()
+        ###
+        conn.set('token:%s' % token, '1')
+
+        return JsonResponse(data={"status": 0, "data": content, "token": token})
+
+
+class IndexView(View):
+    def post(self, request):
         try:
-            user = Client.objects.filter(wechat_id=wechat_id)
+            projects = Project.objects.all()
         except Exception as e:
-            logger_db.error(e)
-            return JsonResponse(data={"msg": "wechat_id 错误"})
-        if user:
-            try:
-                user.update(hands_id=hands_id)
-            except Exception as e:
-                logger_db.error(e)
-                return JsonResponse(data={"msg": "False"})
-        return JsonResponse(data={"msg": "True"})
+            return JsonResponse(data={"status": 4001, "msg": print(e)})
+        content = []
+        if projects is not None:
+            for project in projects:
+                content.append({
+                    "project_name": project.pro_name,
+                    "project_img": project.img_url,
+                })
+
+        return JsonResponse(data={"status": 0, "data": content})
 
 
-class Alipay(View):
-    def post(self,request):
-        data = json.loads(request.body.decode())
-        wechat_id = data.get("wechat_id")
-        money = data .get("gold")
-        alipay = create_alipay()
-        # App支付，将order_string返回给app即可
-        order_id = create_num(wechat_id,1)
-        order_string = alipay.api_alipay_trade_app_pay(
-            out_trade_no=order_id,
-            total_amount=money,
-            subject="LFBrushFans%s" % order_id,
-            notify_url=None  # 可选, 不填则使用默认notify url
-        )
-        hs_order_id = q.decode(order_id)
-        return JsonResponse(data={"ali_msg": order_string,"order_id":hs_order_id})
-
-
-
-
-
-
-
-class CheckPayStatusView(View):
-    def post(self,request):
-        order_id = q.decode(json.loads(request.body.decode()))[0]
-
-        try:
-            order = Order.objects.filter(order_id_num=order_id).first()
-        except Exception as e:
-
-            return JsonResponse(data={"msg":"获取订单失败"})
-        alipay = AliPay(
-            appid=settings.ALIPAY_APPID,
-            app_notify_url=None,  # 默认回调url
-            app_private_key_path=os.path.join(settings.BASE_DIR, "kuaishou_app/app_private_key.pem"),
-            alipay_public_key_path=os.path.join(settings.BASE_DIR, "kuaishou_app/alipay_public_key.pem"),
-            # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
-            sign_type="RSA2",  # RSA 或者 RSA2
-            debug=True  # 默认False  配合沙箱模式使用
-        )
-        while True:
-            response = alipay.api_alipay_trade_query(order_id)
-
-            code = response.get("code")
-            trade_status = response.get("trade_status")
-
-            if code == "10000" and trade_status == "TRADE_SUCCESS":
-                pass
-
-
-class abc(View):
-    def get(self,request):
-        return JsonResponse(data={"msg":"111"})
+class AddItem(View):
+    def post(self):
+        pro_name
