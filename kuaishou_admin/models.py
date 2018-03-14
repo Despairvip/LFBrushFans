@@ -4,6 +4,9 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
+
+
+
 # Create your models here.
 class Client(AbstractUser):
     hands_id = models.CharField(max_length=20, default='')

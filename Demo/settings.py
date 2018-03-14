@@ -167,7 +167,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'LFBrushFans',
         'USER':'root',
-        'PASSWORD':'mysql',
+        'PASSWORD':'',
         'HOST':'127.0.0.1',
         'PORT':'3306'
     }
@@ -208,3 +208,5 @@ STATIC_URL = '/static/'
 
 # alipay
 ALIPAY_APPID = 	"2016091100488045"
+
+AUTH_USER_MODEL = 'kuaishou_admin.Client'

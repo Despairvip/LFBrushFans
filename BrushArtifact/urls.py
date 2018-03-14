@@ -18,9 +18,12 @@ from django.contrib import admin
 
 import kuaishou_admin.urls
 import kuaishou_app.urls
+from backManage import views
 
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^', include(kuaishou_admin.urls)),
-    url(r'^app/', include(kuaishou_app.urls)),
+    # url(r'^admin/', include(admin.site.urls)),
+    # url(r'^', include(kuaishou_admin.urls)),
+    # url(r'^app/', include(kuaishou_app.urls)),
+    url(r'^proManage',views.proManage),
+    url(r'^showProject',views.showProject)
 ]
