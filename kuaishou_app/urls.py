@@ -10,8 +10,8 @@ urlpatterns = [
         url(r'^center$', views.CenterView.as_view()),
         url(r'^confirm$', views.ConfirmView.as_view()),
         url(r'^notes$', views.NotesView.as_view()),
-        url(r'^news$', views.NewsView.as_view()),
-        # url(r'^alipay$', views.Alipay.as_view()),
-        url(r'^abc$', views.abc.as_view()),
+        url(r'^login$', views.ClientLoginView.as_view()),
+        url(r'^pay$', views.PayApi.as_view()),
+        url(r'^index$', views.IndexView.as_view()),
 
 ]

@@ -127,7 +127,7 @@ DATABASES = {
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE ='Asia/Shanghai'
 
 USE_I18N = True
 
@@ -144,3 +144,6 @@ STATIC_URL = '/static/'
 AUTH_USER_MODEL='kuaishou_admin.Client'
 # alipay
 ALIPAY_APPID = 	"2016091100488045"
+# 微信登录
+APP_ID = 'wxd3548103f87244c4'
+SECRET_APP = 'af4992a76cca43e9ec0f2bfd6205fe6c'
