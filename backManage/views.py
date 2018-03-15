@@ -115,8 +115,9 @@ def showTaocan(request):
             # print("###########")
             # print(taocan.detail_combo.all())
             # print('(*********')
+            taocan_msg['detail'] = []
             for detail in taocan.detail_combo.all():
-                taocan_msg['detail'] = []
+
                 taocan_msg['detail'].append({
                     'project_name':detail.pro_name,
                     'project_num':detail.pro_gold,
