@@ -18,7 +18,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 
-from kuaishou_admin.models import Client, Project
+from kuaishou_admin.models import Client, Project, Order
 # 支付宝支付
 from django.http import JsonResponse
 # 支付宝支付配置信息
@@ -48,6 +48,22 @@ def Create_wechatpay_order():
         mch_key=os.getcwd() + "/pay/conf/apiclient_key.pem",
     )
     return wechatpay
+def expired_message():
+    try:
+        orders = Order.objects.filter(status=1).all()
+    except Exception as e:
+        return
+    now_time = time.time()
+    for order in orders:
+        c_time = str(order.create_date)
+        new_time = c_time.split('.')
+        timeArray = time.strptime(new_time, "%Y-%m-%d %H:%M:%S")
+        # 转换成时间戳
+        timestamp = time.mktime(timeArray)
+
+        if timestamp +172800 > now_time:
+            order.status=2
+            order.save()
 
 
 # 支付优惠
