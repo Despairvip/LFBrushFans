@@ -23,12 +23,13 @@ urlpatterns = [
     # url(r'^', include(kuaishou_admin.urls)),
     # url(r'^app/', include(kuaishou_app.urls)),
 
-    url(r'proManage',views.proManage),
+    url(r'^proManage',views.proManage),
     url(r'^showProject',views.showProject),
     url(r'^changeProject',views.changeProManage),
     url(r'^deleteProject',views.deleteProject),
-    url(r'taocanManage',views.taocanManage),
+    url(r'^taocanManage',views.taocanManage),
     url(r'^showTaocan',views.showTaocan),
     url(r'^changeTaocan',views.changeTaocan),
     url(r'^deleteTaocan',views.deleteTaocan),
+    url(r'^login',views.login_houtai),
 ]
