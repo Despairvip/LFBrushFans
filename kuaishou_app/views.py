@@ -4,19 +4,20 @@ import re
 
 import redis
 import requests
+import time
 from django.conf import settings
+from django.core.paginator import Paginator
 from django.db.models import Q
-from django.http import HttpResponseRedirect
 from django.http import JsonResponse
 from django.views.generic import View
 from hashids import Hashids
 
 from kuaishou_admin.models import Project, Client, Order, Order_combo
-from kuaishou_app.models import PayListModel, SaveOpenId
+from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
-    conditions, DetectionConditions
+    conditions, DetectionConditions, expired_message
 
 down = gifshow()
 # 实例化一个加密对象
@@ -42,10 +43,13 @@ class ClickView(DetectionConditions, View):
 
         try:
             client = Client.objects.filter(token=token).first()
-            if not client:
+            if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             return JsonResponse(data={"status": 4001, "msg": print(e)})
+        if client.id != wechat_id:
+            return JsonResponse(data={"status":5001,"msg":"用户未登录"})
+
         project = Project.objects.filter(id=project_id).first()
 
         if project is None:
@@ -97,6 +101,8 @@ class PlayView(DetectionConditions, View):
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             return JsonResponse(data={"status": 4001, "msg": print(e)})
+        if client.id != user_id:
+            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         project = Project.objects.filter(id=project_id).first()
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
@@ -145,6 +151,10 @@ class FansView(DetectionConditions, View):
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             return JsonResponse(data={"status": 4001, "msg": print(e)})
+        if client.id != wechat_id:
+            print(client.id)
+            print(wechat_id)
+            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         project = Project.objects.filter(id=project_id).first()
 
         if project is None:
@@ -189,7 +199,7 @@ class FansView(DetectionConditions, View):
 
         client.save()
 
-        return JsonResponse(data={'status': True, 'order_num': hs_order_id_num})
+        return JsonResponse(data={'status': 0, 'order_num': hs_order_id_num})
 
 
 class ConfirmView(DetectionConditions, View):
@@ -210,6 +220,8 @@ class ConfirmView(DetectionConditions, View):
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             return JsonResponse(data={"status": 4001, "msg": print(e)})
+        if client.id != user_id:
+            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
@@ -249,7 +261,7 @@ class IntegralView(DetectionConditions, View):
         gold = data.get('gold')
         pay_type = data.get("pay_type")
         user_id = data.get("user_id")
-        fil_token = data.get("token")
+
 
         try:
             client = Client.objects.filter(id=user_id).first()
@@ -375,6 +387,9 @@ class NotesView(DetectionConditions, View):
     def post(self, request):
         data = json.loads(request.body.decode())
         user_id = handle_user_id(data.get('user_id'))
+        page = data.get("page", 1)
+        # 一页几条数据
+        num_page = data.get("num_page", 10)
         try:
             orders = Order.objects.filter(client__id__exact=user_id).all()
         except Exception as e:
@@ -395,7 +410,13 @@ class NotesView(DetectionConditions, View):
                 content.append(result)
         else:
             return JsonResponse(data={"status": 5003, "msg": "用户没有订单"})
-        return JsonResponse(data={"status": 0, 'data': content})
+        p = Paginator(content, num_page)
+        count = p.count
+        if page > count:
+            return JsonResponse("")
+        pages = p.num_pages
+        pages_ss = p.page(page).object_list
+        return JsonResponse(data={"status": 0,"data": pages_ss, "count": count, "pages": pages})
 
 
 class ClientLoginView(View):
@@ -457,8 +478,3 @@ class IndexView(View):
                 })
 
         return JsonResponse(data={"status": 0, "data": content})
-
-
-class AddItem(View):
-    def post(self):
-        pro_name
