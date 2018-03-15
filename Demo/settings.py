@@ -143,7 +143,7 @@ ROOT_URLCONF = 'Demo.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR+"/templates",],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -167,7 +167,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'LFBrushFans',
         'USER':'root',
-        'PASSWORD':'mysql',
+        'PASSWORD':'',
         'HOST':'127.0.0.1',
         'PORT':'3306'
     }
@@ -205,6 +205,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # alipay
 ALIPAY_APPID = 	"2016091100488045"
+
+AUTH_USER_MODEL = 'kuaishou_admin.Client'
+
+LOGIN_URL = "/login/"
