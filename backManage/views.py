@@ -273,6 +273,10 @@ def login_houtai(request):
 
 
 
+def index(request):
+    if request.method == "GET":
+        return render(request, "kuaishou_admin/index.html")
+
 
 
 
