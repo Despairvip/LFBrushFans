@@ -9,6 +9,10 @@ from django.db import models
 
 # Create your models here.
 class Client(AbstractUser):
+    choices_login_type = (
+        (0,"微信登陆"),
+        (1,'qq登陆')
+    )
     hands_id = models.CharField(max_length=20, default='')
     # 总消费
     consume_gold = models.IntegerField(default=0)
@@ -20,8 +24,10 @@ class Client(AbstractUser):
     name = models.CharField(max_length=20, default=0)
 
     avatar = models.CharField(max_length=500, default='', null=True)
+
     token = models.CharField(max_length=500, default='')
     unionid = models.CharField(max_length=500,default='')
+    login_type = models.IntegerField(default=0)
 
     def __str__(self):
         return self.name

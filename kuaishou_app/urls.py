@@ -12,6 +12,4 @@ urlpatterns = [
         url(r'^notes$', views.NotesView),
         url(r'^login$', views.ClientLoginView),
         url(r'^pay$', views.PayApi),
-        url(r'^index$', views.IndexView),
-
 ]

@@ -24,95 +24,60 @@ SECRET_KEY = '7y-sf9t=k3#-hn*=62%1vgyxmjxn&rsx%9(s05vquz0m6&nm@&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+# DEBUG = True # 通过这种方式可以打开 DEBUG 模式
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': True,
+    'formatters': {
+        'standard': {
+                'format': '%(levelname)s %(asctime)s %(message)s'
+                },
+    },
+    'filters': {
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler',
+            'formatter':'standard',
+        },
+        'test1_handler': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename':os.path.join(BASE_DIR,'utils/log/app_log.log').replace('\\','/'),
+            'formatter':'standard',
+        },
+        'test2_handler': {
+            'level':'DEBUG',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename':os.path.join(BASE_DIR,'utils/log/admin_log.log').replace('\\','/'),
+            'formatter':'standard',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+        'django_app':{
+            'handlers': ['test1_handler'],
+            'level': 'INFO',
+            'propagate': False
+        },
+        'django_admin':{
+            'handlers': ['test2_handler'],
+            'level': 'INFO',
+            'propagate': False
+        }
+    }
+}
 
 ALLOWED_HOSTS = ["*"]
 CORS_ORIGIN_WHITELIST = (
       '*',
 )
-# LOGGING = {
-#     'version': 1,
-#     'disable_existing_loggers': True,
-#     'formatters': {
-#        'standard': {
-#             'format': '%(asctime)s [%(threadName)s:%(thread)d] [%(name)s:%(lineno)d] [%(module)s:%(funcName)s] [%(levelname)s]- %(message)s'}  #日志格式
-#     },
-#     'filters': {
-#     },
-#     'handlers': {
-#         'mail_admins': {
-#             'level': 'ERROR',
-#             'class': 'django.utils.log.AdminEmailHandler',
-#             'include_html': True,
-#         },
-#         'default': {
-#             'level':'DEBUG',
-#             'class':'logging.handlers.RotatingFileHandler',
-#             'filename': 'Demo/logs/all.log',     #日志输出文件
-#             'maxBytes': 1024*1024*5,                  #文件大小
-#             'backupCount': 5,                         #备份份数
-#             'formatter':'standard',                   #使用哪种formatters日志格式
-#         },
-#         'error': {
-#             'level':'ERROR',
-#             'class':'logging.handlers.RotatingFileHandler',
-#             'filename': '/sourceDns/log/error.log',
-#             'maxBytes':1024*1024*5,
-#             'backupCount': 5,
-#             'formatter':'standard',
-#         },
-#         'console':{
-#             'level': 'DEBUG',
-#             'class': 'logging.StreamHandler',
-#             'formatter': 'standard'
-#         },
-#         'request_handler': {
-#             'level':'DEBUG',
-#             'class':'logging.handlers.RotatingFileHandler',
-#             'filename': '/sourceDns/log/script.log',
-#             'maxBytes': 1024*1024*5,
-#             'backupCount': 5,
-#             'formatter':'standard',
-#         },
-#         'scprits_handler': {
-#             'level':'DEBUG',
-#             'class':'logging.handlers.RotatingFileHandler',
-#             'filename':'/sourceDns/log/script.log',
-#             'maxBytes': 1024*1024*5,
-#             'backupCount': 5,
-#             'formatter':'standard',
-#         }
-#     },
-#     'loggers': {
-#         'django': {
-#             'handlers': ['default', 'console'],
-#             'level': 'DEBUG',
-#             'propagate': False
-#         },
-#         'django.request': {
-#             'handlers': ['request_handler'],
-#             'level': 'DEBUG',
-#             'propagate': False,
-#         },
-#         'scripts': {
-#             'handlers': ['scprits_handler'],
-#             'level': 'INFO',
-#             'propagate': False
-#         },
-#         'views': {
-#             'handlers': ['default', 'error'],
-#             'level': 'DEBUG',
-#             'propagate': True
-#         },
-#         'db':{
-#             'handlers': ['error'],
-#             'level': 'ERROR',
-#             'propagate': True
-#         }
-#     }
-# }
 
-
-# Application definition
 
 INSTALLED_APPS = (
     'corsheaders',##
@@ -122,7 +87,8 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'kuaishou_admin'
+    'kuaishou_admin',
+    'kuaishou_app'
 )
 
 MIDDLEWARE_CLASSES = (
@@ -167,7 +133,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'LFBrushFans',
         'USER':'root',
-        'PASSWORD':'',
+        'PASSWORD':'mysql',
         'HOST':'127.0.0.1',
         'PORT':'3306'
     }

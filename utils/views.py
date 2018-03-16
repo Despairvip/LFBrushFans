@@ -48,6 +48,8 @@ def Create_wechatpay_order():
         mch_key=os.getcwd() + "/pay/conf/apiclient_key.pem",
     )
     return wechatpay
+
+# 48小时候自动修改状态
 def expired_message():
     try:
         orders = Order.objects.filter(status=1).all()
@@ -56,12 +58,12 @@ def expired_message():
     now_time = time.time()
     for order in orders:
         c_time = str(order.create_date)
-        new_time = c_time.split('.')
+        new_time = c_time.split('.')[0]
         timeArray = time.strptime(new_time, "%Y-%m-%d %H:%M:%S")
         # 转换成时间戳
         timestamp = time.mktime(timeArray)
 
-        if timestamp +172800 > now_time:
+        if now_time-172800 > now_time:
             order.status=2
             order.save()
 
@@ -138,11 +140,6 @@ def check_token(view_func):
             return view_func(request,*args,**kwargs)
     return wrapper
 
-class DetectionConditions(object):
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(DetectionConditions, cls).as_view(**initkwargs)
-        return check_token(view)
 
 
 # 检测登录状态
@@ -155,13 +152,6 @@ def login_admin_required_json(view_func):
             return view_func(request, *args, **kwargs)
 
     return wrapper
-
-
-class LoginRequiredJsonMixin(object):
-    @classmethod
-    def as_view(cls, **initkwargs):
-        view = super(LoginRequiredJsonMixin, cls).as_view(**initkwargs)
-        return login_admin_required_json(view)
 
 
 # 生成订单编号
