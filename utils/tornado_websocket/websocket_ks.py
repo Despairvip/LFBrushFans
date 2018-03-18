@@ -1,10 +1,46 @@
+import base64
+import os,django
+
+import re
+from django.template import base
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Demo.settings")# project_name 项目名称
+django.setup()
+
+
 import json
 import time
+import tornado
 import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-from utils.redis_pub_sub.lib_redis import RedisHelper
+from lib_redis import RedisHelper
+from django.contrib.sessions.models import Session
+
+
+super_user = ["xxxx"]
+
+class TestHandler(tornado.web.RequestHandler):
+    def get(self):
+        sessionid = self.get_cookie("sessionid")
+        print(sessionid)
+        session_key = Session.objects.filter(session_key=sessionid).first()
+        session_msg = session_key.session_data
+        user_msg = base64.b64decode(session_msg).decode()
+        print(user_msg)
+        # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
+        # print(session_msg)
+        for i in super_user:
+            if i in user_msg:
+                print("true")
+
+
+        # name = self.get_cookie("user_name")
+        # print(name)
+        self.write("success")
+
+
 
 
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
@@ -83,22 +119,37 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
             },
         ]
         obj = RedisHelper()
-        obj = json.loads(message)
+        obj_msg = json.loads(message)
+        session_key = self.get_secure_cookie("name")
+        print(session_key)
 
         # 赋值订阅变量
         redis_sub = obj.subscribe()
 
-        if obj['action'] == "start":
+        sessionid = self.get_cookie("sessionid")
+        print(sessionid)
+        session_key = Session.objects.filter(session_key=sessionid).first()
+        session_msg = session_key.session_data
+        user_msg = base64.b64decode(session_msg).decode()
+        print(user_msg)
+        # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
+        # print(session_msg)
+        # for i in super_user:
+        #     if i in user_msg:
 
+
+        if obj_msg['action'] == "start":
+            for i in super_user:
+                if i in user_msg:
             # 循环执行如下命令
-            while not self.status_close:
-                # 二次调用parse_response() 开始接收
-                msg_json = redis_sub.parse_response()[2]
-                print(msg_json)
-                msg = json.dumps(msg_json.decode())
+                    while True:
+                        # 二次调用parse_response() 开始接收
+                        msg_json = redis_sub.parse_response()[2]
+                        print(msg_json)
+                        msg = msg_json.decode()
 
-                time.sleep(1)
-                self.write_message(msg)
+                        time.sleep(1)
+                        self.write_message(msg)
 
 
 
@@ -110,7 +161,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
-            (r'/ws', WebSocketHandler)
+            (r'/ws', WebSocketHandler),
+            (r'/test', TestHandler)
         ]
 
         tornado.web.Application.__init__(self, handlers)

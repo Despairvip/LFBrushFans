@@ -13,7 +13,7 @@ encrypt = Hashids()
 '''登陆'''
 
 
-@login_admin_required_json
+# @login_admin_required_json
 def LoginView( request):
     data = json.loads(request.body.decode())
     user_name = data["user"]

@@ -4,7 +4,7 @@ import re
 
 import redis
 import requests
-from django.conf import settings
+from Demo import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
@@ -79,8 +79,6 @@ def ClickView(request):
         order = Order(gold=need_gold, client=client, kuaishou_id=kuaishou_id, link_works=works_link,
                       count_init=click_num, project=project, order_id_num=order_id)
         order.save()
-        for i in range(100000):
-            logger.error("success")
         return JsonResponse(data={'status': 0, "order_num": hs_order_id_num})
 
 
@@ -484,4 +482,9 @@ def ClientLoginView(request):
 
             return JsonResponse(data={"status": 0, "data": content, "token": token})
             # qq登陆
+
+
+
+
+
 
