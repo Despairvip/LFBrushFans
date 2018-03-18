@@ -17,11 +17,13 @@ from django.conf.urls import include, url
 from django.contrib import admin
 import kuaishou_admin.urls
 import kuaishou_app.urls
+import home.urls
 from backManage import views
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^', include(kuaishou_admin.urls)),
     url(r'^app/', include(kuaishou_app.urls)),
+    url(r'^home/', include(home.urls)),
 
 
     url(r'^proManage',views.proManage),

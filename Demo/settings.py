@@ -179,3 +179,9 @@ ALIPAY_APPID = 	"2016091100488045"
 AUTH_USER_MODEL = 'kuaishou_admin.Client'
 
 LOGIN_URL = "/login/"
+
+# alipay
+ALIPAY_APPID = 	" 2018011601908317"
+# 微信登录
+APP_ID = 'wxd3548103f87244c4'
+SECRET_APP = 'af4992a76cca43e9ec0f2bfd6205fe6c'

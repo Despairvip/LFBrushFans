@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('kuaishou_admin', '0003_auto_20180314_1643'),
+        ('kuaishou_admin', '0001_initial'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='client',
-            name='login_type',
-            field=models.IntegerField(default=0),
+            name='unionid',
+            field=models.CharField(max_length=500, null=True, default=''),
         ),
     ]

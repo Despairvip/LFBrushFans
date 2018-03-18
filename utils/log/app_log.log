@@ -1,0 +1,2 @@
+ERROR 2018-03-16 05:21:46,661 Could not find the TLS certificate file, invalid path: /home/python/Desktop/BrushArtifact/pay/conf/apiclient_cert.pem
+ERROR 2018-03-16 05:25:00,144 Could not find the TLS certificate file, invalid path: /home/python/Desktop/BrushArtifact/pay/conf/apiclient_cert.pem

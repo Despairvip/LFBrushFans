@@ -13,7 +13,6 @@ encrypt = Hashids()
 '''登陆'''
 
 
-@login_admin_required_json
 def LoginView( request):
     data = json.loads(request.body.decode())
     user_name = data["user"]
@@ -166,7 +165,7 @@ def UserSearchView( request):
             print(user_id)
             users = Client.objects.filter(id=user_id).all()
         else:
-            users = Client.objects.filter(name=data.get("user_name")).all()
+            users = Client.objects.filter(username=data.get("user_name")).all()
 
         if users:
             for user in users:

@@ -1,10 +1,11 @@
+import logging
 from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
-
-
+logger = logging.getLogger("django_app")
+from kuaishou_admin.models import Project
 
 
 @csrf_exempt
@@ -52,7 +53,7 @@ def home(request):
                 "apps": [
                     {
                         "image": "kuaishoufenshi",
-                        # "verifylogin": True,
+                        #
                         # "debug": True,
                         # "color": "#ffa800",
                         "title": "快手粉丝",
@@ -65,7 +66,7 @@ def home(request):
                         "type": 2,
                         "title": "快手播放量",
                         "image": "kuaishouplayimg",
-                        # "verifylogin": True,
+                        #
                         "color": "#01cf84",
                         "parms": {
                             "name": "kuaishouPlay"
@@ -79,7 +80,7 @@ def home(request):
                         "type": 2,
                         "title": "快手双击",
                         "image": "kuaishoushuangji",
-                        # "verifylogin": True,
+                        #
                         # "debug": True,
                         "color": "#ee4c83"
                     },
@@ -90,7 +91,7 @@ def home(request):
                         "type": 2,
                         "title": "快手直播号",
                         "image": "kuaishouzhiboimg",
-                        # "verifylogin": True,
+                        #
                         "color": "#0bc9a7"
                     },
                     {
@@ -130,44 +131,17 @@ def home(request):
 
 @csrf_exempt
 def shuangji_page(request):
-    return JsonResponse({
-        "err":0,
-        "msg":"",
-        "data":{
-            "numAndGold":[
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-                {
-                    "num":200,
-                    "gold":1000,
-                    "verifylogin":True,
-                },
-            ]
-        }
-    })
+    try:
+        clicks = Project.objects.filter(pro_name="刷双击").all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
+    content=[]
+    if clicks:
+        for fan in clicks:
+            content.append(fan.to_dict())
+
+    return JsonResponse(data={"status":0,"data":content})
 
 
 @csrf_exempt
@@ -279,87 +253,34 @@ def remenTaocan(request):
 
 @csrf_exempt
 def shuafenshi(request):
-    return JsonResponse(
-        {
-            "err":0,
-            "msg":"",
-            "data":{
-                "numAndGold": [
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                ]
-            }
-        }
-    )
+    try:
+        fans = Project.objects.filter(pro_name="刷粉丝").all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
+    content=[]
+    if fans:
+        for fan in fans:
+            content.append(fan.to_dict())
+
+    return JsonResponse(data={"status":0,"data":content})
+
+
+
+
+
 
 
 @csrf_exempt
 def play_home_page(request):
-    return JsonResponse(
-        {
-            "err":0,
-            "msg":"",
-            "data":{
-                "numAndGold": [
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                    {
-                        "num": 200,
-                        "gold": 1000,
-                        "verifylogin": True,
-                    },
-                ]
-            }
-        }
-    )
+    try:
+        fans = Project.objects.filter(pro_name="刷播放").all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
+    content=[]
+    if fans:
+        for fan in fans:
+            content.append(fan.to_dict())
+
+    return JsonResponse(data={"status":0,"data":content})
