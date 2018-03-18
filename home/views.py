@@ -5,7 +5,7 @@ from django.shortcuts import render
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
 logger = logging.getLogger("django_app")
-from kuaishou_admin.models import Project
+from kuaishou_admin.models import Project, Order_combo
 
 
 @csrf_exempt
@@ -114,16 +114,6 @@ def home(request):
                         "verifylogin": False,
                         "color": "#69d230"
                     },
-                    # {
-                    #     "parms": {
-                    #         "name": "Login"
-                    #     },
-                    #     "type": 2,
-                    #     "title": "切换账号",
-                    #     "image": "qiehuanzhanghao",
-                    #     "verifylogin": False,
-                    #     "color": "#2c8ff5"
-                    # }
                 ]
             }
         }
@@ -146,109 +136,120 @@ def shuangji_page(request):
 
 @csrf_exempt
 def remenTaocan(request):
-    return JsonResponse(
-        {
-            "err":0,
-            "msg":"",
-            "data":{
-                "taocan":[
-                    {
-                        "name":"套餐一",
-                        "gold":800,
-                        "detail":[
-                            {"name":"双击",
-                              "num":200
-                             },
-                            {"name":"评论",
-                              "num":10
-                             },
-                            {"name":"播放",
-                              "num":200
-                             },
-                        ]
-                    },
-                    {
-                        "name":"套餐二",
-                        "gold":1600,
-                        "detail":[
-                            {"name":"双击",
-                              "num":500
-                             },
-                            {"name":"评论",
-                              "num":20
-                             },
-                            {"name":"播放",
-                              "num":5000
-                             },
-                        ]
-                    },
-                    {
-                        "name":"套餐三",
-                        "gold":3000,
-                        "detail":[
-                            {"name":"双击",
-                              "num":800
-                             },
-                            {"name":"评论",
-                              "num":50
-                             },
-                            {"name":"播放",
-                              "num":1000
-                             },
-                        ]
-                    },
-                    {
-                        "name":"套餐四",
-                        "gold":5000,
-                        "detail":[
-                            {"name":"双击",
-                              "num":1200
-                             },
-                            {"name":"评论",
-                              "num":80
-                             },
-                            {"name":"播放",
-                              "num":50000
-                             },
-                        ]
-                    },
-                    {
-                        "name":"套餐五",
-                        "gold":10000,
-                        "detail":[
-                            {"name":"双击",
-                              "num":5000
-                             },
-                            {"name":"评论",
-                              "num":150
-                             },
-                            {"name":"播放",
-                              "num":15000
-                             },
-                        ]
-                    },
-                    {
-                        "name":"套餐六",
-                        "gold":20000,
-                        "detail":[
-                            {"name":"双击",
-                              "num":10000
-                             },
-                            {"name":"评论",
-                              "num":300
-                             },
-                            {"name":"播放",
-                              "num":30000
-                             },
-                        ]
-                    },
+    try:
+        clicks = Order_combo.object.all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+    content = []
+    if clicks:
+        for fan in clicks:
+            content.append(fan.to_dict())
 
-
-                ]
-            }
-
-        }
-    )
+    return JsonResponse(data={"status": 0, "data": content})
+    # return JsonResponse(
+    #     {
+    #         "err":0,
+    #         "msg":"",
+    #         "data":{
+    #             "taocan":[
+    #                 {
+    #                     "name":"套餐一",
+    #                     "gold":800,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":200
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":10
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":200
+    #                          },
+    #                     ]
+    #                 },
+    #                 {
+    #                     "name":"套餐二",
+    #                     "gold":1600,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":500
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":20
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":5000
+    #                          },
+    #                     ]
+    #                 },
+    #                 {
+    #                     "name":"套餐三",
+    #                     "gold":3000,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":800
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":50
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":1000
+    #                          },
+    #                     ]
+    #                 },
+    #                 {
+    #                     "name":"套餐四",
+    #                     "gold":5000,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":1200
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":80
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":50000
+    #                          },
+    #                     ]
+    #                 },
+    #                 {
+    #                     "name":"套餐五",
+    #                     "gold":10000,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":5000
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":150
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":15000
+    #                          },
+    #                     ]
+    #                 },
+    #                 {
+    #                     "name":"套餐六",
+    #                     "gold":20000,
+    #                     "detail":[
+    #                         {"name":"双击",
+    #                           "num":10000
+    #                          },
+    #                         {"name":"评论",
+    #                           "num":300
+    #                          },
+    #                         {"name":"播放",
+    #                           "num":30000
+    #                          },
+    #                     ]
+    #                 },
+    #
+    #
+    #             ]
+    #         }
+    #
+    #     }
+    # )
 
 
 @csrf_exempt

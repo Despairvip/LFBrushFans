@@ -34,6 +34,6 @@ urlpatterns = [
     url(r'^showTaocan',views.showTaocan),
     url(r'^changeTaocan',views.changeTaocan),
     url(r'^deleteTaocan',views.deleteTaocan),
-    url(r'^login',views.login_houtai),
+    url(r'^login_admin',views.login_houtai),
     url(r'^index',views.index),
 ]

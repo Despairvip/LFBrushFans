@@ -4,8 +4,6 @@ import re
 
 import redis
 import requests
-from django.http import HttpResponseRedirect
-
 from Demo import settings
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -509,4 +507,9 @@ def ClientLoginView(request):
         content = client.to_dict()
         print(content)
         return JsonResponse(data={"status":0,'data':content,"token":token})
+
+
+
+
+
 
