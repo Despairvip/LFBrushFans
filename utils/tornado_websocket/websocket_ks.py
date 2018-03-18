@@ -131,6 +131,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         session_key = Session.objects.filter(session_key=sessionid).first()
         session_msg = session_key.session_data
         user_msg = base64.b64decode(session_msg).decode()
+
         print(user_msg)
         # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
         # print(session_msg)
