@@ -32,7 +32,7 @@ start() {
 
 
 
-    python3 /home/sfpt/manage.py migrate
+    python3 /home/sfpt-server/manage.py migrate
     echo "初始化数据库"
 
 
