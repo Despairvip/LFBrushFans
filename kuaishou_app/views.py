@@ -59,6 +59,10 @@ def ClickView(request):
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
+
+
+
+
         # ----------------订单操作---------------
         order_id = create_num(wechat_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
@@ -111,6 +115,7 @@ def PlayView(request):
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
 
         # -----------订单处理-------------------
         order_id = create_num(user_id, project_id)

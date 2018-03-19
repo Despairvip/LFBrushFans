@@ -127,6 +127,20 @@ class Order(models.Model):
         db_table = "kuaishou_order"
 
 
+class Combo_project(models.Model):
+    '''
+    套餐所关联的项目
+    '''
+    pro_name = models.CharField(max_length=100, null=False)
+    count_project = models.IntegerField(default=0)
+    pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'), null=True)
+
+    def __str__(self):
+        return self.pro_name
+
+    class Meta:
+        db_table = "combo_project"
+
 class Order_combo(models.Model):
     '''
     套餐表
@@ -134,12 +148,15 @@ class Order_combo(models.Model):
     name = models.CharField(max_length=100, null=False)
     detail_combo = models.ManyToManyField('Project', blank=True)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
+    project_detail = models.ManyToManyField('Combo_project',null=False)
 
     def __str__(self):
         return self.name
 
     class Meta:
         db_table = "kuaishou_combo"
+
+
 
 
 class Old_Order_project(models.Model):

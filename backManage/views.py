@@ -83,6 +83,8 @@ def showProject(request):
                 return JsonResponse({"status":500,"msg":"you are not superuser"})
         else:
             return JsonResponse({"status":500,"msg":"usr is not exists"})
+
+
 @login_required
 def deleteProject(request):
     if request.method == "POST":
@@ -104,6 +106,7 @@ def deleteProject(request):
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
 
 
+
 @login_required
 def taocanManage(request):
     if request.method == "POST":
@@ -118,6 +121,8 @@ def taocanManage(request):
 
                 projectOneName = data['detail'][0]['proName']
                 projectOneNum = data['detail'][0]['num']
+                print('********')
+                print(projectOneNum)
 
                 projectTwoName = data['detail'][1]['proName']
                 projectTwoNum = data['detail'][1]['num']
@@ -131,16 +136,23 @@ def taocanManage(request):
 
                     return JsonResponse({"status":500,'msg':'already exists'})
 
-                taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
+                # taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
 
-                projectOne,projectTwo,projectThree = taocan_save(projectOneName,projectOneNum,projectTwoName,projectTwoNum,projectThreeName,projectThreeNum)
-                taocan.detail_combo.add(projectOne,projectTwo,projectThree)
-                taocan.save()
-                return JsonResponse({"status":0})
+
+                result = taocan_save(taocan_name,taocan_gold,projectOneName,projectOneNum,projectTwoName,projectTwoNum,projectThreeName,projectThreeNum)
+
+
+
+                if result:
+                    return JsonResponse({"status":0})
+                else:
+                    return JsonResponse({"status":500,"msg":"your detail is same"})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
+
+
 @login_required
 def showTaocan(request):
     if request.method == "POST":
@@ -148,7 +160,7 @@ def showTaocan(request):
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
-                taocans = Order_combo.objects.all().prefetch_related('detail_combo')
+                taocans = Order_combo.objects.all().prefetch_related('project_detail')
                 data = []
                 for taocan in taocans:
                     taocan_msg = {}
@@ -156,14 +168,14 @@ def showTaocan(request):
                     taocan_msg['name'] = taocan.name
                     taocan_msg['gold'] = taocan.pro_gold
                     # print("###########")
-                    # print(taocan.detail_combo.all())
+                    # print(taocan.project_detail.all())
                     # print('(*********')
                     taocan_msg['detail'] = []
-                    for detail in taocan.detail_combo.all():
+                    for detail in taocan.project_detail.all():
 
                         taocan_msg['detail'].append({
                             'project_name':detail.pro_name,
-                            'project_num':detail.pro_gold,
+                            'project_num':detail.count_project,
                             'project_id':detail.id,
                         })
                     data.append(taocan_msg)
@@ -187,6 +199,7 @@ def changeTaocan(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
+                print(data)
                 taocan_id = data['id']
                 taocan_name = data['name']
                 taocan_gold = data['gold']
@@ -208,20 +221,18 @@ def changeTaocan(request):
                 taocan = Order_combo.objects.filter(id=taocan_id).first()
                 if taocan is None:
                     return JsonResponse({"status":500,"msg":"taocan not exsits"})
-                proOne,proTwo,proThree = update_taocan_msg(
+                result = update_taocan_msg(
+                    taocan_name,taocan_gold,taocan,
                     projectOneName,projectOneNum,projectOneid,
                     projectTwoName,projectTwoNum,projectTwoid,
                     projectThreeName,projectThreeNum,projectThreeid,
                 )
-                taocan.name = taocan_name
-                taocan.pro_gold = taocan_gold
 
-
-                taocan.detail_combo.add(proOne,proTwo,proThree)
-                taocan.save()
-                print(taocan.detail_combo.all())
-
-                return JsonResponse({"status":0})
+                print(taocan.project_detail.all())
+                if result['status'] == 0:
+                    return JsonResponse({"status":0})
+                else:
+                    return JsonResponse({"status":500,"msg":"you dong't change these projects"})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:
@@ -241,7 +252,7 @@ def deleteTaocan(request):
                 taocan = Order_combo.objects.filter(id=taocan_id).first()
                 if taocan is None:
                     return JsonResponse({"status":500,'msg':'taocan is not exsits'})
-
+                taocan.project_detail.clear()
                 taocan.delete()
                 return JsonResponse({"status": 0})
             else:

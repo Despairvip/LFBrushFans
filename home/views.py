@@ -34,136 +34,94 @@ def home(request):
                 "topbanner": [
                     {
                         "image": "https://www.apicloud.com/start_page/47/23/472344980350f56a6c9e377d29edc8ca.png",
-                        "parms": {
-                            "name": "HelpPage"
-                        },
-                        "type": 2,
-                        "verifylogin": False
-                    },
-                    {
-                        "image": "https://www.apicloud.com/start_page/47/23/472344980350f56a6c9e377d29edc8ca.png",
-                        "parms": {
-                            "name": "AboutMe"
-                        },
-                        "type": 2,
-                        "verifylogin": False
-                    }
-                ],
-                "apps": [
-                    {
-                        "image": "kuaishoufenshi",
-                        # "verifylogin": True,
-                        # "debug": True,
-                        # "color": "#ffa800",
-                        "title": "快手粉丝",
-                        "type": 2,
-                        "parms": {
-                            "name": "kuaishouFans"
-                        }
-                    },
-                    {
-                        "type": 2,
-                        "title": "快手播放量",
-                        "image": "kuaishouplayimg",
-                        # "verifylogin": True,
-                        "color": "#01cf84",
-                        "parms": {
-                            "name": "kuaishouPlay"
-                        },
+                        "route":"CustomerService",
+                        "type": 1,
 
                     },
                     {
-                        "parms": {
-                            "name": "kuaishouShuangji"
-                        },
+                        "image": "https://www.apicloud.com/start_page/47/23/472344980350f56a6c9e377d29edc8ca.png",
+                        "route":"",
                         "type": 2,
-                        "title": "快手双击",
-                        "image": "kuaishoushuangji",
-                        # "verifylogin": True,
-                        # "debug": True,
-                        "color": "#ee4c83"
-                    },
-                    {
-                        "parms": {
-                            "name": "kuaishouzhibo"
-                        },
-                        "type": 2,
-                        "title": "快手直播号",
-                        "image": "kuaishouzhiboimg",
-                        # "verifylogin": True,
-                        "color": "#0bc9a7"
-                    },
-                    {
-                        "parms": {
-                            "name": "remenTaocan"
-                        },
-                        "type": 2,
-                        "title": "热门套餐",
-                        "image": "热门套餐",
-                        "verifylogin": False,
-                        "color": "#a361f6"
-                    },
-                    {
-                        "parms": {
-                            "name": "downloadWithoutMark"
-                        },
-                        "type": 2,
-                        "title": "无水印下载",
-                        "image": "shiyongbangzhu",
-                        "verifylogin": False,
-                        "color": "#69d230"
-                    },
-                    # {
-                    #     "parms": {
-                    #         "name": "Login"
-                    #     },
-                    #     "type": 2,
-                    #     "title": "切换账号",
-                    #     "image": "qiehuanzhanghao",
-                    #     "verifylogin": False,
-                    #     "color": "#2c8ff5"
-                    # }
-                ]
+
+                    }
+                ],
+                 "app": [
+        {
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexFans.png",
+          "title": "快手粉丝",
+          "route": "KsFans"
+        },
+        {
+          "title": "快手播放量",
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexPlay.png",
+          "route": "KsPlay"
+        },
+        {
+          "title": "快手双击",
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexClick.png",
+          "route": "KsDoubleClick"
+        },
+        {
+          "title": "快手直播号",
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexAccount.png",
+          "route": "KsAccount"
+        },
+        {
+          "title": "热门套餐",
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexHot.png",
+          "route": "ksHotCombo"
+        },
+        {
+          "title": "无水印下载",
+          "image": "http://oxrm6w8zc.bkt.clouddn.com/indexDownload.png",
+          "route": "KsDownload"
+        }
+      ]
             }
         }
     )
 
+
+
+
 @csrf_exempt
 def shuangji_page(request):
+
     return JsonResponse({
         "err":0,
         "msg":"",
         "data":{
             "numAndGold":[
                 {
+
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
                 {
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
                 {
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
                 {
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
                 {
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
                 {
                     "num":200,
                     "gold":1000,
-                    "verifylogin":True,
+
                 },
             ]
         }
@@ -172,9 +130,12 @@ def shuangji_page(request):
 
 @csrf_exempt
 def remenTaocan(request):
+
+
+
     return JsonResponse(
         {
-            "err":0,
+            "status":0,
             "msg":"",
             "data":{
                 "taocan":[
@@ -288,7 +249,7 @@ def shuafenshi(request):
                     {
                         "num": 200,
                         "gold": 1000,
-                        "verifylogin": True,
+
                     },
                     {
                         "num": 200,
