@@ -51,6 +51,9 @@ start() {
     /etc/init.d/nginx reload
     echo "重启nginx"
     exit 0
+
+
+
 }
 
 stop(){
