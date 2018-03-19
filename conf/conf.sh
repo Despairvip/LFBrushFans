@@ -15,12 +15,12 @@ start() {
     pip3 install uwsgi
     echo "uwsgi安装成功"
     echo "开始配置"
-    pip3 install -r /home/sfpt/conf/requirements.txt
+    pip3 install -r /home/sfpt-server/conf/requirements.txt
     echo "python第三方插件安装完成"
 
     if [ "$EVN" = "debug" ]; then
-        mv -f /home/sfpt/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
-        mv /home/sfpt/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
+        mv -f /home/sfpt-server/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
+        mv /home/sfpt-server/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
     fi
 
 
