@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '7y-sf9t=k3#-hn*=62%1vgyxmjxn&rsx%9(s05vquz0m6&nm@&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 # DEBUG = True # 通过这种方式可以打开 DEBUG 模式
 LOGGING = {
     'version': 1,

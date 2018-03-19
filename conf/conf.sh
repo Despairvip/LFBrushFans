@@ -48,6 +48,7 @@ start() {
 
 #    nohup uwsgi --ini /home/ksht/uwsgi.ini
 #    echo "启动uwsgi进程"
+    /etc/init.d/nginx start
     /etc/init.d/nginx reload
     echo "重启nginx"
     exit 0
