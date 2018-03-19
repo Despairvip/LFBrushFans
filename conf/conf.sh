@@ -15,7 +15,7 @@ start() {
     pip3 install uwsgi
     echo "uwsgi安装成功"
     echo "开始配置"
-    pip3 install -r /home/ksht/conf/requirements.txt
+    pip3 install -r /home/sfpt/conf/requirements.txt
     echo "python第三方插件安装完成"
 
     if [ "$EVN" = "debug" ]; then
