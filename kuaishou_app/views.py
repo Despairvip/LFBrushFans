@@ -166,6 +166,7 @@ def FansView(request):
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
 
         if not conditions(client, need_gold):
+            print(need_gold)
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
         order_id = create_num(wechat_id, project_id)
@@ -196,14 +197,10 @@ def FansView(request):
 
             order.save()
 
-            client.consume_gold += need_gold
-            client.gold -= need_gold
-            client.save()
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, 'msg': print(e)})
 
-        client.save()
 
         return JsonResponse(data={'status': 0, 'order_num': hs_order_id_num})
 

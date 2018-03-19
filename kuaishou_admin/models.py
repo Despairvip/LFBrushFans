@@ -28,7 +28,7 @@ class Client(AbstractUser):
     token = models.CharField(max_length=500, default='')
     unionid = models.CharField(max_length=500,default='',null=True)
     login_type = models.IntegerField(default=0,choices=choices_login_type)
-
+    version = models.IntegerField(default=1)
     def __str__(self):
         return self.name
 
@@ -59,7 +59,6 @@ class Project(models.Model):
     def to_dict(self):
         data = {
             "pro_id":self.id,
-            "pro_name":self.pro_name,
             "pro_count":self.count_project,
             "pro_gold":self.pro_gold,
         }
@@ -143,6 +142,14 @@ class Order_combo(models.Model):
     name = models.CharField(max_length=100, null=False)
     detail_combo = models.ManyToManyField('Project', blank=True)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
+
+    def to_dict(self):
+        data = {
+            "pro_id":self.id,
+            "pro_name":self.name,
+            "pro_gold":self.pro_gold,
+        }
+        return data
 
     def __str__(self):
         return self.name
