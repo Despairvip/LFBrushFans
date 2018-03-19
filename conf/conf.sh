@@ -21,7 +21,7 @@ start() {
     if [ "$EVN" = "debug" ]; then
         mv -f /home/ksht/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
         mv /home/ksht/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
-
+    fi
 
 
     if [ "$EVN" = "debug" ]; then

@@ -131,9 +131,9 @@ WSGI_APPLICATION = 'Demo.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sfpt',
-        'USER':'sfpt',
-        'PASSWORD':'82D6X2ud369',
+        'NAME': 'sfpttest',
+        'USER':'sfpttest',
+        'PASSWORD':'a4P7W24i772',
         'HOST':'rm-uf6476u9lp566f39t.mysql.rds.aliyuncs.com',
         'PORT':'3306'
     }
