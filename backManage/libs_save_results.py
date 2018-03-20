@@ -1,41 +1,106 @@
+'''
+ower:@shadoesmilezhou
+email:630551760@qq.com
+date:2018/3/19/下午7:14
+file:ccc.py
+IDE:PyCharm
+'''
+
+
 from django.http import JsonResponse
 
-from kuaishou_admin.models import Project
+from kuaishou_admin.models import  Order_combo, Combo_project
 
 
-def taocan_save(projectOneName, projectOneNum, projectTwoName, projectTwoNum, projectThreeName, projectThreeNum):
-    projectOne = Project.objects.get_or_create(pro_name=projectOneName, count_project=projectOneNum)
-    projectTwo = Project.objects.get_or_create(pro_name=projectTwoName, count_project=projectTwoNum)
-    projectThree = Project.objects.get_or_create(pro_name=projectThreeName, count_project=projectThreeNum)
+def save_taocan_detail(**kwargs):
+    """
+    创建套餐及其中的数据
+    :param kwargs:
+    :return:
+    """
+    print(kwargs)
+    taocan_name = kwargs.get("name")
+    taocan_gold = kwargs.get("gold")
+    taocan_detail = kwargs.get("detail")
+    if Order_combo.objects.filter(name=taocan_name).first():
+        return {"status": 500, 'msg': 'already exists'}
+    taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
+    msg_status = []
+    for msg in taocan_detail:
+        project = Combo_project.objects.get_or_create(pro_name=msg.get("proName"), count_project=msg.get("num"))
+        taocan.project_detail.add(project[0].id)
+        msg_status.append(project[1])
 
-    if projectOne and projectTwo and projectThree:
-        return projectOne,projectTwo,projectThree
+
+
+    if any(msg_status):
+        taocan.save()
+        return {"status": 0, 'msg': 'create data success'}
     else:
-        return JsonResponse({"status":500,'msg':'create project error'})
+        return {"status": 500, 'msg': 'create data failed'}
 
 
-def update_taocan_msg(projectOneName, projectOneNum, projectOneid,
-                      projectTwoName, projectTwoNum, projectTwoid,
-                      projectThreeName, projectThreeNum, projectThreeid):
-    projectOne = Project.objects.filter(id=projectOneid).first()
-    if projectOne is None:
-        return {"status": 500, "msg": "project not exists"}
-    projectOne.pro_name = projectOneName
-    projectOne.count_project = projectOneNum
-    projectOne.save()
 
-    projectTwo = Project.objects.filter(id=projectTwoid).first()
-    if projectOne is None:
-        return {"status": 500, "msg": "project not exists"}
-    projectTwo.pro_name = projectTwoName
-    projectTwo.count_project = projectTwoNum
-    projectTwo.save()
 
-    projectThree = Project.objects.filter(id=projectThreeid).first()
-    if projectThree is None:
-        return {"status": 500, "msg": "project not exists"}
-    projectThree.pro_name = projectThreeName
-    projectThree.count_project = projectThreeNum
-    projectThree.save()
 
-    return projectOne, projectTwo, projectThree
+
+
+def update_taocan(**kwargs):
+    """
+    修改套餐信息
+    :param kwargs:
+    :return:
+    """
+    taocan_name = kwargs.get("name")
+    taocan_gold = kwargs.get("gold")
+    taocan_id = kwargs.get("id")
+    taocan_detail = kwargs.get("detail")
+    pro_status = []
+    taocan = Order_combo.objects.filter(id=taocan_id).first()
+    if taocan is None:
+        return {"status":500,"msg":"not found "}
+
+    for msg in taocan_detail:
+        detail_id = msg.get('project_id')
+        print(detail_id)
+        proj = Combo_project.objects.filter(id=detail_id).first()
+        if proj is not None:
+            print("**********")
+            taocan.project_detail.remove(proj.id)
+            project_new = Combo_project.objects.get_or_create(pro_name=msg.get("proName"), count_project=msg.get("num"))
+            taocan.project_detail.add(project_new[0].id)
+            pro_status.append(project_new[1])
+        else:
+            return {"status":500,"msg":"not found "}
+
+    if any(pro_status):
+        taocan.name = taocan_name
+        taocan.pro_gold = taocan_gold
+        taocan.save()
+        print(taocan.project_detail.all())
+        return {"status":0}
+    else:
+        return {"status":500,"msg":"update data failed "}
+
+
+
+def delete_pro_in_taocan(**kwargs):
+    taocan_id = kwargs.get("id")
+    project_id = kwargs.get("project_id")
+    taocan = Order_combo.objects.filter(id=taocan_id).first()
+    if taocan is not None:
+        proj_all = taocan.project_detail.all()
+        proj = Combo_project.objects.filter(id=project_id).first()
+        if proj is not None:
+            if proj in proj_all:
+                taocan.project_detail.remove(proj.id)
+            else:
+                return {"status":500,"msg":"this project is not in combo"}
+            return {"status":0}
+        else:
+            return {"status":500,"msg":"project is not exists"}
+    else:
+        return {"status":500,"msg":"taocan is not exists"}
+
+
+

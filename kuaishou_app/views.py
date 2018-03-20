@@ -58,6 +58,10 @@ def ClickView(request):
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
+
+
+
+
         # ----------------订单操作---------------
         order_id = create_num(wechat_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
@@ -110,6 +114,7 @@ def PlayView(request):
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
+
 
         # -----------订单处理-------------------
         order_id = create_num(user_id, project_id)
@@ -322,7 +327,12 @@ def IntegralView(request):
                     client.save()
                     return JsonResponse({"code": 0, "msg": "支付成功"})
 
+'''
+xialing:alipay，qq登陆,wechat登陆
+zhouzhou:wechatpay,wechat登陆
 
+
+'''
 @check_token
 def PayApi(request):
     if request.method == "POST":
@@ -364,6 +374,11 @@ def PayApi(request):
             return JsonResponse({"status": 3001, 'msg': "异常重新尝试"})
 
 
+
+'''
+
+xialing
+'''
 @check_token
 def CenterView(request):
     if request.method == "POST":
@@ -377,7 +392,10 @@ def CenterView(request):
         content = user.to_dict()
         return JsonResponse(data={"status": 0,"data":content})
 
+'''
 
+xialing
+'''
 @check_token
 def DownloadView(request):
     if request.method == "POST":
@@ -396,7 +414,10 @@ def DownloadView(request):
         link = hs_link["photos"][0]["main_mv_urls"][0]["url"]
         return JsonResponse(data={"status": 0, 'link': link})
 
+'''
+xialing
 
+'''
 @check_token
 def NotesView(request):
     if request.method == "POST":
@@ -433,7 +454,10 @@ def NotesView(request):
         pages_ss = p.page(page).object_list
         return JsonResponse(data={"status": 0, "data": pages_ss, "count": count, "pages": pages})
 
+'''
+xialing and zhouzhou
 
+'''
 def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())

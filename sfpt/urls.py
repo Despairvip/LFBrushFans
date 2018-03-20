@@ -36,4 +36,5 @@ urlpatterns = [
     url(r'^deleteTaocan',views.deleteTaocan),
     url(r'^login_admin',views.login_houtai),
     url(r'^index',views.index),
+    url(r'^delProInCom',views.delete_taocan_project),
 ]
