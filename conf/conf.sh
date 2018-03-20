@@ -43,6 +43,7 @@ start() {
 
 
     sudo killall -9 uwsgi
+    killall -9 nginx
     echo "结束uwsgi进程"
 
     supervisorctl reread
@@ -54,7 +55,7 @@ start() {
 
 #    nohup uwsgi --ini /home/ksht/uwsgi.ini
 #    echo "启动uwsgi进程"
-    /etc/init.d/nginx start
+#    /etc/init.d/nginx start
     /etc/init.d/nginx reload
     echo "重启nginx"
     exit 0
