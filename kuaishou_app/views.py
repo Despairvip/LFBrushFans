@@ -531,6 +531,26 @@ def ClientLoginView(request):
 
 
 
+def showTaocan(request):
+    if request.method == "POST":
+        taocans = Order_combo.objects.all().prefetch_related('project_detail')
+        data = []
+        for taocan in taocans:
+            taocan_msg = {}
+            taocan_msg['id'] = taocan.id
+            taocan_msg['name'] = taocan.name
+            taocan_msg['gold'] = taocan.pro_gold
+
+            taocan_msg['detail'] = []
+            for detail in taocan.project_detail.all():
+                taocan_msg['detail'].append({
+                    'project_name': detail.pro_name,
+                    'project_num': detail.count_project,
+                    'project_id': detail.id,
+                })
+            data.append(taocan_msg)
+
+            return JsonResponse({"status":0,"data": data})
 
 
 
