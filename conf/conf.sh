@@ -31,7 +31,7 @@ start() {
 
 
 
-
+    mv -f /home/sfpt-server/sfpt/settings_"$EVN".py /home/sfpt-server/sfpt/settings.py
     apt-get -y install redis-server
     echo "安装redis server"
 
@@ -43,6 +43,7 @@ start() {
 
 
     sudo killall -9 uwsgi
+
     echo "结束uwsgi进程"
 
     supervisorctl reread
@@ -54,6 +55,7 @@ start() {
 
 #    nohup uwsgi --ini /home/ksht/uwsgi.ini
 #    echo "启动uwsgi进程"
+    killall -9 nginx
     /etc/init.d/nginx start
     /etc/init.d/nginx reload
     echo "重启nginx"
