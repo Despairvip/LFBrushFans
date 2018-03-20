@@ -31,7 +31,7 @@ start() {
 
 
 
-    mv -f /home/ksht/ksht/settings_"$EVN".py /home/ksht/ksht/settings.py
+    mv -f /home/sfpt-server/sfpt/settings_"$EVN".py /home/sfpt-server/sfpt/settings.py
     apt-get -y install redis-server
     echo "安装redis server"
 
