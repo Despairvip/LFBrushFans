@@ -2,7 +2,7 @@
 ower:@shadoesmilezhou
 email:630551760@qq.com
 date:2018/3/19/下午7:14
-file:ccc.py
+file:views.py
 IDE:PyCharm
 '''
 
@@ -58,10 +58,10 @@ def changeProManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                id = data.get['id']
-                name = data.get['name']
-                num = data.get['num']
-                gold = data.get["gold"]
+                id = data.get("id")
+                name = data.get("name")
+                num = data.get("num")
+                gold = data.get("gold")
 
                 project = Project.objects.filter(id=id).first()
                 if project is None:
@@ -87,7 +87,7 @@ def showProject(request):
     :return:
     """
     if request.method == "POST":
-        user = request.session.get["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
@@ -120,7 +120,7 @@ def deleteProject(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                project_id = data.get['id']
+                project_id = data.get("id")
 
                 project = Project.objects.filter(id=project_id).first()
                 if project is None:
@@ -165,7 +165,7 @@ def taocanManage(request):
                 if result["status"] == 0:
                     return JsonResponse({"status": 0})
                 else:
-                    return JsonResponse({"status": 500, "msg": "your detail is same"})
+                    return JsonResponse({"status": 500, "msg": result["msg"]})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:
@@ -276,8 +276,9 @@ def login_houtai(request):
     """
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        user_name = data["user"]
-        password = data["pwd"]
+        print(data)
+        user_name = data.get("user")
+        password = data.get("pwd")
         # 认证用户
         user = authenticate(username=user_name, password=password)
         if user is None:
