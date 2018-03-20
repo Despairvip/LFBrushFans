@@ -21,13 +21,19 @@ start() {
     if [ "$EVN" = "debug" ]; then
         mv -f /home/sfpt-server/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
         mv /home/sfpt-server/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
+    elif [ "$EVN" = "prerelease" ]; then
+        mv -f /home/sfpt-server/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
+        mv /home/sfpt-server/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
+    else
+        mv -f /home/sfpt-server/conf/nginx.conf /etc/nginx/conf.d/sfpt.conf
+        mv /home/sfpt-server/conf/supervisor.conf /etc/supervisor/conf.d/sfpt.conf
     fi
 
 
-    if [ "$EVN" = "debug" ]; then
-        apt-get -y install redis-server
-        echo "安装redis server"
-    fi
+
+
+    apt-get -y install redis-server
+    echo "安装redis server"
 
 
 
