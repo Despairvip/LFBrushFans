@@ -1,0 +1,1 @@
+from sfpt.settings_develop import *

@@ -104,12 +104,12 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
 )
 
-ROOT_URLCONF = 'Demo.urls'
+ROOT_URLCONF = 'sfpt.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR+"/templates",],
+        'DIRS': [BASE_DIR+"templates",],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -122,31 +122,11 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'Demo.wsgi.application'
+WSGI_APPLICATION = 'sfpt.wsgi.application'
 
 
-# Database
-# https://docs.djangoproject.com/en/1.8/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'sfpttest',
-        'USER':'sfpttest',
-        'PASSWORD':'a4P7W24i772',
-        'HOST':'rm-uf6476u9lp566f39t.mysql.rds.aliyuncs.com',
-        'PORT':'3306'
-    }
-}
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://10.211.55.5:6379/1",
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-        }
-    }
-}
+
 
 # Session
 
