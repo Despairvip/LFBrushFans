@@ -5,9 +5,10 @@ import re
 
 import redis
 import requests
-from Demo import settings
+from sfpt import settings
+
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import  Q
 from django.http import JsonResponse
 from hashids import Hashids
 
