@@ -60,70 +60,37 @@ def home(request):
                         "verifylogin": False
                     }
                 ],
-                "apps": [
+                "app": [
                     {
-                        "image": "kuaishoufenshi",
-                        #
-                        # "debug": True,
-                        # "color": "#ffa800",
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexFans.png",
                         "title": "快手粉丝",
-                        "type": 2,
-                        "parms": {
-                            "name": "kuaishouFans"
-                        }
+                        "route": "KsFans"
                     },
                     {
-                        "type": 2,
                         "title": "快手播放量",
-                        "image": "kuaishouplayimg",
-                        #
-                        "color": "#01cf84",
-                        "parms": {
-                            "name": "kuaishouPlay"
-                        },
-
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexPlay.png",
+                        "route": "KsPlay"
                     },
                     {
-                        "parms": {
-                            "name": "kuaishouShuangji"
-                        },
-                        "type": 2,
                         "title": "快手双击",
-                        "image": "kuaishoushuangji",
-                        #
-                        # "debug": True,
-                        "color": "#ee4c83"
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexClick.png",
+                        "route": "KsDoubleClick"
                     },
                     {
-                        "parms": {
-                            "name": "kuaishouzhibo"
-                        },
-                        "type": 2,
                         "title": "快手直播号",
-                        "image": "kuaishouzhiboimg",
-                        #
-                        "color": "#0bc9a7"
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexAccount.png",
+                        "route": "KsAccount"
                     },
                     {
-                        "parms": {
-                            "name": "remenTaocan"
-                        },
-                        "type": 2,
                         "title": "热门套餐",
-                        "image": "热门套餐",
-                        "verifylogin": False,
-                        "color": "#a361f6"
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexHot.png",
+                        "route": "ksHotCombo"
                     },
                     {
-                        "parms": {
-                            "name": "downloadWithoutMark"
-                        },
-                        "type": 2,
                         "title": "无水印下载",
-                        "image": "shiyongbangzhu",
-                        "verifylogin": False,
-                        "color": "#69d230"
-                    },
+                        "image": "http://oxrm6w8zc.bkt.clouddn.com/indexDownload.png",
+                        "route": "KsDownload"
+                    }
                 ]
             }
         }
