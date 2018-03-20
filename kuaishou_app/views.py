@@ -1,5 +1,6 @@
 import json
 import logging
+import random
 import re
 
 import redis
@@ -10,7 +11,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from hashids import Hashids
 
-from kuaishou_admin.models import Project, Client, Order, Order_combo
+from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement
 from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
@@ -529,8 +530,41 @@ def ClientLoginView(request):
         print(content)
         return JsonResponse(data={"status":0,'data':content,"token":token})
 
+"""written by Despair"""
+def check_update(request):
+    '''检查更新'''
+    data = json.loads(request.body.decode())
+    version_code = data.get("version_code")
+    try:
+        # 获取最新版本号
+        version = CheckVersion.objects.values("version")[0].get("version")
+        print(version)
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 4001, "msg": "获取失败"})
+    if version is None:
+        return JsonResponse(data={"status": 4001, "msg": "获取版本号失败"})
 
+    # 进行对比
+    if int(version) > version_code:
+        return JsonResponse(data={"status": 0, "msg": "需要更新", "data": version})
 
+    return JsonResponse(data={"status": 0, "msg": "不需要更新"})
 
+"""written by Despair"""
+def admin_id(request):
+    '''客服微信号列表'''
+    try:
+        admin_ids = AdminManagement.objects.all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
+    if admin_ids is None:
+        return JsonResponse(data={"status": 4001, "msg": "没有数据"})
+    content = []
+    for admin in admin_ids:
+        content.append(admin.wechat)
+
+    return JsonResponse(data={"status" : 0,"data":content})
 
 

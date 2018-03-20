@@ -28,7 +28,7 @@ def proManage(request):
     :return:
     '''
     if request.method == "POST":
-        user = request.session.get["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:

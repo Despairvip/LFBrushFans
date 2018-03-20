@@ -11,7 +11,7 @@ urlpatterns = [
     url(r'^change$', views.ModifyStatusView, name="change"),
     url(r'^edit$', views.ModifyGoldView, name="edit"),
     url(r'^users$', views.UserListView, name="usersearch"),
-
+    url(r'^add$', views.add_wechat),
 
 ]
 
