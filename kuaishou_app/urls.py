@@ -12,4 +12,6 @@ urlpatterns = [
         url(r'^notes$', views.NotesView),
         url(r'^login$', views.ClientLoginView),
         url(r'^pay$', views.PayApi),
+        url(r'^version$', views.check_update),
+        url(r'^admins$', views.admin_id),
 ]

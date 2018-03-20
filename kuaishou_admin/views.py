@@ -1,7 +1,8 @@
+import logging
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from hashids import Hashids
-from kuaishou_admin.models import Order, Client
+from kuaishou_admin.models import Order, Client, AdminManagement
 import json
 from django.core.paginator import Paginator
 
@@ -9,7 +10,7 @@ from django.core.paginator import Paginator
 from utils.views import  login_admin_required_json
 
 encrypt = Hashids()
-
+logger = logging.getLogger("django_admin")
 '''登陆'''
 
 '''
@@ -259,3 +260,22 @@ def UserListView( request):
         p = Paginator(content, 30)
         pages_ss = p.page(1).object_list
         return JsonResponse(data={"msg": pages_ss})
+'''
+written by Despair
+'''
+@login_admin_required_json
+def add_wechat(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode())
+        wechat_id = data.get("wechat_id")
+
+        admin = AdminManagement(wechat=wechat_id)
+        if admin is not None:
+            return JsonResponse(data={"status": 0, "msg": "此微信号已添加"})
+        try:
+            admin.wechat = wechat_id
+            admin.save()
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse(data={"status": 4001, "msg": "修改错误"})
+        return JsonResponse(data={"status": 0, "msg": "添加成功"})
