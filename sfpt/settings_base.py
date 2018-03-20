@@ -24,6 +24,40 @@ SECRET_KEY = '7y-sf9t=k3#-hn*=62%1vgyxmjxn&rsx%9(s05vquz0m6&nm@&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
+
+ALLOWED_HOSTS = ['*']
+
+CORS_ALLOW_CREDENTIALS = True
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    '*'
+)
+
+CORS_ALLOW_METHODS = (
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'VIEW',
+)
+
+CORS_ALLOW_HEADERS = (
+    'XMLHttpRequest',
+    'X_FILENAME',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+    'Pragma',
+)
+
+
 # DEBUG = True # 通过这种方式可以打开 DEBUG 模式
 LOGGING = {
     'version': 1,
@@ -73,10 +107,6 @@ LOGGING = {
     }
 }
 
-ALLOWED_HOSTS = ["*"]
-CORS_ORIGIN_WHITELIST = (
-      '*',
-)
 
 
 INSTALLED_APPS = (
@@ -126,6 +156,27 @@ WSGI_APPLICATION = 'sfpt.wsgi.application'
 
 
 
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'LFbrushFans',
+        'USER':'root',
+        'PASSWORD':'',
+        'HOST':'127.0.0.1',
+        'PORT':'3306'
+    }
+}
+# CACHES = {
+#     "default": {
+#         "BACKEND": "django_redis.cache.RedisCache",
+#         "LOCATION": "redis://10.211.55.5:6379/1",
+#         "OPTIONS": {
+#             "CLIENT_CLASS": "django_redis.client.DefaultClient",
+#         }
+#     }
+# }
 
 
 # Session

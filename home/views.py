@@ -91,10 +91,10 @@ def home(request):
 @csrf_exempt
 def shuangji_page(request):
     try:
-        clicks = Project.objects.filter(pro_name="刷双击").all()
+        clicks = Project.objects.filter(pro_type=2).all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
     if clicks:
         for fan in clicks:
@@ -105,26 +105,35 @@ def shuangji_page(request):
 
 @csrf_exempt
 def remenTaocan(request):
-    try:
-        clicks = Order_combo.objects.all()
-    except Exception as e:
-        logger.error(e)
-        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
-    content = []
-    if clicks:
-        for fan in clicks:
-            content.append(fan.to_dict())
+    if request.method == "GET":
+        taocans = Order_combo.objects.all().prefetch_related('project_detail')
+        data = []
+        for taocan in taocans:
+            taocan_msg = {}
+            taocan_msg['id'] = taocan.id
+            taocan_msg['name'] = taocan.name
+            taocan_msg['gold'] = taocan.pro_gold
 
-    return JsonResponse(data={"status": 0, "data": content})
+            taocan_msg['detail'] = []
+            for detail in taocan.project_detail.all():
+                taocan_msg['detail'].append({
+                    'project_name': detail.pro_name,
+                    'project_num': detail.count_project,
+                    'project_id': detail.id,
+                })
+            data.append(taocan_msg)
+
+        return JsonResponse({"status": 0, "data": data})
 
 
 @csrf_exempt
 def shuafenshi(request):
+
     try:
-        fans = Project.objects.filter(pro_name="刷粉丝").all()
+        fans = Project.objects.filter(pro_type=1).all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
     if fans:
         for fan in fans:
@@ -136,10 +145,10 @@ def shuafenshi(request):
 @csrf_exempt
 def play_home_page(request):
     try:
-        fans = Project.objects.filter(pro_name="刷播放").all()
+        fans = Project.objects.filter(pro_type=3).all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
     if fans:
         for fan in fans:

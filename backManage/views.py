@@ -36,9 +36,11 @@ def proManage(request):
                 proName = data["name"]
                 proNum = data["num"]
                 gold = data["gold"]
-
+                proj = Project.objects.filter(pro_name=proName,pro_gold=gold,count_project=proNum)
+                if proj is not None:
+                    return JsonResponse({"status":500,"msg":"this project exists"})
                 if Project.objects.create(pro_name=proName, pro_gold=gold, count_project=proNum):
-                    return JsonResponse({'status': 200})
+                    return JsonResponse({'status': 0})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:

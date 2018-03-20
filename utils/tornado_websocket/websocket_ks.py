@@ -29,6 +29,7 @@ from django.contrib.sessions.models import Session
 
 
 super_user = ["xxxx"]
+Tag = "_auth_user_id"
 
 class TestHandler(tornado.web.RequestHandler):
     def get(self):
@@ -129,8 +130,8 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         ]
         obj = RedisHelper()
         obj_msg = json.loads(message)
-        session_key = self.get_secure_cookie("name")
-        print(session_key)
+        # session_key = self.get_cookie("name")
+        # print(session_key)
 
         # 赋值订阅变量
         redis_sub = obj.subscribe()
@@ -150,7 +151,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         if obj_msg['action'] == "start":
             for i in super_user:
-                if i in user_msg:
+                if Tag in user_msg:
             # 循环执行如下命令
                     while True:
                         # 二次调用parse_response() 开始接收
