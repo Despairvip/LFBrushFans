@@ -21,8 +21,10 @@ from django.http import HttpResponseRedirect
 from kuaishou_admin.models import Client, Project, Order
 # 支付宝支付
 from django.http import JsonResponse
-# 支付宝支付配置信息
+
 from wechatpy import WeChatPay
+
+from utils.tornado_websocket.websocket_test import redisconn
 
 
 def Create_alipay_order():

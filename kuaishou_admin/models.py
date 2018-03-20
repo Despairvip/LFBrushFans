@@ -21,21 +21,21 @@ class Client(AbstractUser):
     # 金币
     gold = models.IntegerField(default=0)
     # 用户名
-    name = models.CharField(max_length=20, default=0)
+    # name = models.CharField(max_length=20, default=0)
 
     avatar = models.CharField(max_length=500, default='', null=True)
 
     token = models.CharField(max_length=500, default='')
-    unionid = models.CharField(max_length=500,default='')
-    login_type = models.IntegerField(default=0)
-
+    unionid = models.CharField(max_length=500,default='',null=True)
+    login_type = models.IntegerField(default=0,choices=choices_login_type)
+    version = models.IntegerField(default=1)
     def __str__(self):
         return self.name
 
     def to_dict(self):
         dict = {
             "user_id": 1000+self.id,
-            "user_name": self.name,
+            "user_name": self.username,
             "gold": self.gold,
             "phone_num": self.phone_num,
             "consume_gold": self.consume_gold,
@@ -55,6 +55,14 @@ class Project(models.Model):
     count_project = models.IntegerField(default=0)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'),null=True)
     img_url = models.CharField(max_length=100, default="")
+
+    def to_dict(self):
+        data = {
+            "pro_id":self.id,
+            "pro_count":self.count_project,
+            "pro_gold":self.pro_gold,
+        }
+        return data
 
     def __str__(self):
         return self.pro_name
@@ -149,6 +157,14 @@ class Order_combo(models.Model):
     detail_combo = models.ManyToManyField('Project', blank=True)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
     project_detail = models.ManyToManyField('Combo_project',null=False)
+
+    def to_dict(self):
+        data = {
+            "pro_id":self.id,
+            "pro_name":self.name,
+            "pro_gold":self.pro_gold,
+        }
+        return data
 
     def __str__(self):
         return self.name

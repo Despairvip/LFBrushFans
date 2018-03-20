@@ -17,7 +17,6 @@ from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
 
-
 down = gifshow()
 # 实例化一个加密对象
 q = Hashids()
@@ -42,14 +41,14 @@ def ClickView(request):
         token = data.get("token")
 
         try:
-            client = Client.objects.filter(token=token).first()
+            client = Client.objects.filter(id=wechat_id).first()
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
-        if client.id != wechat_id:
-            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        if client.token != token:
+            return JsonResponse(data={"status": 5003, "msg": "用户token"})
 
         project = Project.objects.filter(id=project_id).first()
 
@@ -101,14 +100,14 @@ def PlayView(request):
         token = data.get("token")
 
         try:
-            client = Client.objects.filter(token=token).first()
+            client = Client.objects.filter(id=user_id).first()
             if not client:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
-        if client.id != user_id:
-            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        if client.token != token:
+            return JsonResponse(data={"status": 5003, "msg": "token验证失败"})
         project = Project.objects.filter(id=project_id).first()
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
@@ -154,22 +153,25 @@ def FansView(request):
         token = data.get("token")
 
         try:
-            client = Client.objects.filter(token=token).first()
-            if not client:
+            client = Client.objects.filter(id=wechat_id).first()
+            if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+            if client.token != token:
+                print(client.token)
+                return JsonResponse(data={"status": 5003, "msg": "token验证不通过"})
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
-        if client.id != wechat_id:
-            print(client.id)
-            print(wechat_id)
-            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        if client.token != token:
+            return JsonResponse(data={"status": 5003, "msg": "token错误"})
+
         project = Project.objects.filter(id=project_id).first()
 
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
 
         if not conditions(client, need_gold):
+            print(need_gold)
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
         order_id = create_num(wechat_id, project_id)
@@ -200,14 +202,10 @@ def FansView(request):
 
             order.save()
 
-            client.consume_gold += need_gold
-            client.gold -= need_gold
-            client.save()
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, 'msg': print(e)})
 
-        client.save()
 
         return JsonResponse(data={'status': 0, 'order_num': hs_order_id_num})
 
@@ -226,14 +224,14 @@ def ConfirmView(request):
         token = data.get("token")
 
         try:
-            client = Client.objects.filter(token=token).first()
+            client = Client.objects.filter(id=user_id).first()
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
-        if client.id != user_id:
-            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        if client.token != token:
+            return JsonResponse(data={"status": 5003, "msg": "用户token"})
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
@@ -273,10 +271,10 @@ def IntegralView(request):
         order_id = q.decode(data.get('order_id'))[0]
         gold = data.get('gold')
         pay_type = data.get("pay_type")
-        user_id = data.get("user_id")
+        user_id = handle_user_id(data.get("user_id"))
         token = data.get("token")
         try:
-            client = Client.objects.filter(token=token).first()
+            client = Client.objects.filter(id=user_id).first()
             pay = PayListModel.objects.filter(order_id=order_id).first()
         except Exception as e:
             logger.error(e)
@@ -284,8 +282,8 @@ def IntegralView(request):
         if client or pay is None:
             return JsonResponse(data={'status': 4003, 'msg': "id或订单号出问题"})
 
-        if client.id != user_id:
-            return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
+        if client.token != token:
+            return JsonResponse(data={"status": 5003, "msg": "用户token"})
         if pay_type == '0':
             alipay = create_alipay()
             while True:
@@ -353,7 +351,7 @@ def PayApi(request):
                     out_trade_no=order_id,
                     total_amount=money,
                     subject="LFBrushFans%s" % order_id,
-                    notify_url=None  # 可选, 不填则使用默认notify url
+                    notify_url='http://120.26.60.181:8001/pay/new/notify/alipay'  # 可选, 不填则使用默认notify url
                 )
                 print(order_id)
                 hs_order_id = q.encode(int(order_id))
@@ -386,14 +384,13 @@ def CenterView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         user_id = handle_user_id(data.get('user_id'))
-        # token = data.get("token")
         try:
             user = Client.objects.filter(id=user_id).first()
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 5003, 'msg': "没有查到用户信息"})
         content = user.to_dict()
-        return JsonResponse(data=content)
+        return JsonResponse(data={"status": 0,"data":content})
 
 '''
 
@@ -464,9 +461,10 @@ xialing and zhouzhou
 def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        code = data['code']
+
         type = data['type']
-        if type == 0:
+        if type == '0':
+            code = data['code']
             secret = settings.SECRET_APP
             appid = settings.APP_ID
             if code is not None:
@@ -481,7 +479,7 @@ def ClientLoginView(request):
                 return JsonResponse(data={"status": 4003, "msg": res_dict.get("errcode")})
             res_data_openid = res_dict['openid']
             token = res_dict['access_token']
-
+            print(token)
             user_info = requests.get('https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s' % (
                 token, res_data_openid)).json()
 
@@ -491,11 +489,13 @@ def ClientLoginView(request):
             if user_info.get('errcode') is not None:
                 return JsonResponse(data={"status": 6000, "msg": user_info.get("errcode")})
 
-            client = Client.objects.get(Q(unionid=unionid) | Q(name=client_name))
-            if client:
+            client = Client.objects.filter(unionid=unionid).first()
+            if client is not None:
+                client.token = token
+                client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
             client = Client()
-            client.name = client_name
+            client.username = client_name
             client.avatar = avatar_url
             client.token = token
             client.unionid = unionid
@@ -505,7 +505,29 @@ def ClientLoginView(request):
             conn.set('token:%s' % token, '1')
 
             return JsonResponse(data={"status": 0, "data": content, "token": token})
-            # qq登陆
+        # qq登陆
+
+        openid = data.get('openid')
+        oauth_consumer_key = data.get('oauth_consumer_key')
+        token = data.get("access_token")
+        res = requests.get('https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
+        token, oauth_consumer_key, openid)).json()
+
+        avatar = res.get("figureurl_qq_1")
+        nickname = res.get("nickname")
+        client = Client.objects.filter(unionid=openid).first()
+        if client is not None:
+            client.token = token
+            client.save()
+            return JsonResponse(data={"status":0,"data":client.to_dict(),"token":token})
+        try:
+            client = Client(username=nickname,avatar=avatar,unionid=openid,login_type=1,token=token)
+            client.save()
+        except Exception as e:
+            return JsonResponse({"msg":print(e)})
+        content = client.to_dict()
+        print(content)
+        return JsonResponse(data={"status":0,'data':content,"token":token})
 
 
 
