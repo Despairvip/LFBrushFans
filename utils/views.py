@@ -39,6 +39,10 @@ def Create_alipay_order():
 
 
 # 微信支付配置信息
+"""
+zhouzhou
+
+"""
 def Create_wechatpay_order():
     wechatpay = WeChatPay(
         appid="123456",
@@ -50,6 +54,9 @@ def Create_wechatpay_order():
     return wechatpay
 
 # 48小时候自动修改状态
+"""
+xialing
+"""
 def expired_message():
     try:
         orders = Order.objects.filter(status=1).all()
@@ -68,6 +75,9 @@ def expired_message():
             order.save()
 
 
+"""
+xialing and zhouzhou
+"""
 # 支付优惠
 def amount2integral(user, amount):
     r = datetime.datetime.now().strftime('%Y-%m') + ":" + str(user.id)
@@ -108,6 +118,11 @@ def handle_user_id(user_id):
 
 
 # 判断条件
+'''
+
+xialing and zhouzhou
+
+'''
 def conditions(client, need_gold,):
     print(need_gold)
     need_gold = int(need_gold)
@@ -130,6 +145,10 @@ def conditions(client, need_gold,):
         client.save()
     return True
 
+'''
+xialing
+
+'''
 def check_token(view_func):
     @wraps(view_func)
     def wrapper(request,*args, **kwargs):
@@ -141,7 +160,10 @@ def check_token(view_func):
     return wrapper
 
 
+'''
+xialing
 
+'''
 # 检测登录状态
 def login_admin_required_json(view_func):
     @wraps(view_func)
@@ -154,6 +176,10 @@ def login_admin_required_json(view_func):
     return wrapper
 
 
+'''
+
+
+'''
 # 生成订单编号
 def createOrdernumber(user_id, project_id):
     _date = datetime.datetime.now()

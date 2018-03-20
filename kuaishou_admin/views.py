@@ -12,7 +12,11 @@ encrypt = Hashids()
 
 '''登陆'''
 
+'''
+这是老的：xialing
+新的在backmanage里面：zhouzhou
 
+'''
 # @login_admin_required_json
 def LoginView( request):
     data = json.loads(request.body.decode())
@@ -53,7 +57,10 @@ def RealOrdersView( request):
 
 '''下拉框搜索'''
 
+"""
+xialing
 
+"""
 @login_admin_required_json
 def OptionSearchView( request):
     # if not request.user.is_superuser:
@@ -119,7 +126,10 @@ def OptionSearchView( request):
 
 
 '''输入框搜索 order'''
+'''
+xialing and zhouzhou
 
+'''
 
 @login_admin_required_json
 def EnterSearchView( request):
@@ -150,7 +160,10 @@ def EnterSearchView( request):
 
 
 '''用户名字/id 搜索'''
+'''
+zhouzhou xialing
 
+'''
 
 @login_admin_required_json
 def UserSearchView( request):
@@ -177,7 +190,10 @@ def UserSearchView( request):
 
 
 '''修改订单状态'''
+'''
+xialing
 
+'''
 
 @login_admin_required_json
 def ModifyStatusView( request):
@@ -199,7 +215,10 @@ def ModifyStatusView( request):
 
 '''修改金币'''
 
+'''
+xialing
 
+'''
 @login_admin_required_json
 def ModifyGoldView( request):
 
@@ -221,7 +240,9 @@ def ModifyGoldView( request):
 
 '''用户列表'''
 
-
+'''
+xialing
+'''
 @login_admin_required_json
 def UserListView( request):
     # if not request.user.is_superuser:
