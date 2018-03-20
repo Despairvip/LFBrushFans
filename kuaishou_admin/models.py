@@ -188,3 +188,22 @@ class Old_Order_project(models.Model):
 
     class Meta:
         db_table = "kuaishou_expend_ord"
+
+class AdminManagement(models.Model):
+    wechat = models.CharField(max_length=100,default='',null=True)
+
+    def __str__(self):
+        return self.wecaht
+
+    class Meta:
+        db_table = "admin_id"
+
+
+class CheckVersion(models.Model):
+    version = models.CharField(max_length=100,default=1)
+
+    def __str__(self):
+        return self.version
+
+    class Meta:
+        db_table = "version_num"

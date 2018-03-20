@@ -27,6 +27,7 @@ def save_taocan_detail(**kwargs):
     taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
     msg_status = []
     for msg in taocan_detail:
+
         project = Combo_project.objects.get_or_create(pro_name=msg.get("proName"), count_project=msg.get("num"))
         taocan.project_detail.add(project[0].id)
         msg_status.append(project[1])
@@ -37,6 +38,7 @@ def save_taocan_detail(**kwargs):
         taocan.save()
         return {"status": 0, 'msg': 'create data success'}
     else:
+        taocan.delete()
         return {"status": 500, 'msg': 'create data failed'}
 
 

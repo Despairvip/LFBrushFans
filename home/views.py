@@ -1,24 +1,25 @@
-import json
+
 import logging
+
+
 from django.http import JsonResponse
-from django.shortcuts import render
 
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
+
 logger = logging.getLogger("django_app")
-from kuaishou_admin.models import Project, Order_combo, Client
+from kuaishou_admin.models import Project, Order_combo, Client, AdminManagement
 
 
 @csrf_exempt
 def page_shuafen_pay(request):
     return JsonResponse(
         {
-            {'status':200,
-             'type':1,
-             'data':{
-                 'pay':''
+            {'status': 200,
+             'type': 1,
+             'data': {
+                 'pay': ''
              }
-
 
              },
         }
@@ -27,16 +28,6 @@ def page_shuafen_pay(request):
 
 @csrf_exempt
 def home(request):
-    version_code = json.loads(request.body.decode()).get("version_code")
-    try:
-        version_num = Client.objects.values("version").first().get('version')
-        print(version_num)
-    except Exception as e:
-        logger.error(e)
-        return JsonResponse(data={"status":4001})
-    if version_code < version_num:
-        return JsonResponse(data={"status":0,"msg":'用户需要更新软件'})
-
     return JsonResponse(
         {
             "err": 0,
@@ -96,19 +87,20 @@ def home(request):
         }
     )
 
+
 @csrf_exempt
 def shuangji_page(request):
     try:
         clicks = Project.objects.filter(pro_name="刷双击").all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
-    content=[]
+        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+    content = []
     if clicks:
         for fan in clicks:
             content.append(fan.to_dict())
 
-    return JsonResponse(data={"status":0,"data":content})
+    return JsonResponse(data={"status": 0, "data": content})
 
 
 @csrf_exempt
@@ -132,18 +124,13 @@ def shuafenshi(request):
         fans = Project.objects.filter(pro_name="刷粉丝").all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
-    content=[]
+        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+    content = []
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
 
-    return JsonResponse(data={"status":0,"data":content})
-
-
-
-
-
+    return JsonResponse(data={"status": 0, "data": content})
 
 
 @csrf_exempt
@@ -152,10 +139,10 @@ def play_home_page(request):
         fans = Project.objects.filter(pro_name="刷播放").all()
     except Exception as e:
         logger.error(e)
-        return JsonResponse(data={"status":4001,"msg":"数据哭查询失败"})
-    content=[]
+        return JsonResponse(data={"status": 4001, "msg": "数据哭查询失败"})
+    content = []
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
 
-    return JsonResponse(data={"status":0,"data":content})
+    return JsonResponse(data={"status": 0, "data": content})
