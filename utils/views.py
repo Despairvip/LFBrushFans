@@ -45,6 +45,8 @@ def Create_alipay_order():
 zhouzhou
 
 """
+
+
 def Create_wechatpay_order():
     wechatpay = WeChatPay(
         appid="123456",
@@ -55,10 +57,13 @@ def Create_wechatpay_order():
     )
     return wechatpay
 
+
 # 48小时候自动修改状态
 """
 xialing
 """
+
+
 def expired_message():
     try:
         orders = Order.objects.filter(status=1).all()
@@ -72,14 +77,16 @@ def expired_message():
         # 转换成时间戳
         timestamp = time.mktime(timeArray)
 
-        if now_time-172800 > now_time:
-            order.status=2
+        if now_time - 172800 > timestamp:
+            order.status = 2
             order.save()
 
 
 """
 xialing and zhouzhou
 """
+
+
 # 支付优惠
 def amount2integral(user, amount):
     r = datetime.datetime.now().strftime('%Y-%m') + ":" + str(user.id)
@@ -117,18 +124,17 @@ def handle_user_id(user_id):
     return hs_user_id
 
 
-
-
 # 判断条件
 '''
 
 xialing and zhouzhou
 
 '''
-def conditions(client, need_gold,):
+
+
+def conditions(client, need_gold, ):
     print(need_gold)
     need_gold = int(need_gold)
-
 
     client_now_gold = client.gold
     consume_gold = client.consume_gold
@@ -147,18 +153,22 @@ def conditions(client, need_gold,):
         client.save()
     return True
 
+
 '''
 xialing
 
 '''
+
+
 def check_token(view_func):
     @wraps(view_func)
-    def wrapper(request,*args, **kwargs):
+    def wrapper(request, *args, **kwargs):
         token = json.loads(request.body.decode()).get("token")
         if not token:
             return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
         else:
-            return view_func(request,*args,**kwargs)
+            return view_func(request, *args, **kwargs)
+
     return wrapper
 
 
@@ -166,6 +176,8 @@ def check_token(view_func):
 xialing
 
 '''
+
+
 # 检测登录状态
 def login_admin_required_json(view_func):
     @wraps(view_func)
@@ -182,6 +194,8 @@ def login_admin_required_json(view_func):
 
 
 '''
+
+
 # 生成订单编号
 def createOrdernumber(user_id, project_id):
     _date = datetime.datetime.now()

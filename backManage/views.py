@@ -6,6 +6,10 @@ file:views.py
 IDE:PyCharm
 '''
 
+''' Despair modified with 2018-3-21
+    添加修改数据库，删除缓存机制
+'''
+
 import base64
 import json
 
@@ -16,7 +20,9 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
-from backManage.libs_save_results import  save_taocan_detail, update_taocan, delete_pro_in_taocan
+from django.core.cache import cache
+
+from backManage.libs_save_results import save_taocan_detail, update_taocan, delete_pro_in_taocan
 from kuaishou_admin.models import Order_combo, Project, Client
 
 
@@ -28,6 +34,9 @@ def proManage(request):
     :return:
     '''
     if request.method == "POST":
+        cache.delte("play")
+        cache.delte("fans")  # 删除缓存
+        cache.delte("click")
         user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -36,9 +45,9 @@ def proManage(request):
                 proName = data["name"]
                 proNum = data["num"]
                 gold = data["gold"]
-                proj = Project.objects.filter(pro_name=proName,pro_gold=gold,count_project=proNum)
+                proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum)
                 if proj is not None:
-                    return JsonResponse({"status":500,"msg":"this project exists"})
+                    return JsonResponse({"status": 500, "msg": "this project exists"})
                 if Project.objects.create(pro_name=proName, pro_gold=gold, count_project=proNum):
                     return JsonResponse({'status': 0})
             else:
@@ -55,6 +64,9 @@ def changeProManage(request):
     :return:
     """
     if request.method == "POST":
+        cache.delte("play")
+        cache.delte("fans")  # 删除缓存
+        cache.delte("click")
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -117,6 +129,9 @@ def deleteProject(request):
     :return:
     """
     if request.method == "POST":
+        cache.delte("play")
+        cache.delte("fans")  # 删除缓存
+        cache.delte("click")
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -143,6 +158,7 @@ def taocanManage(request):
     :return:
     '''
     if request.method == "POST":
+        cache.delete("combo")  # 删除缓存
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -198,7 +214,6 @@ def showTaocan(request):
                         })
                     data.append(taocan_msg)
 
-
                 return JsonResponse({"data": data})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
@@ -209,12 +224,13 @@ def showTaocan(request):
 @login_required
 def changeTaocan(request):
     if request.method == "POST":
+        cache.delete("combo")  # 删除缓存
+
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-
 
                 result = update_taocan(**data)
 
@@ -231,6 +247,8 @@ def changeTaocan(request):
 @login_required
 def deleteTaocan(request):
     if request.method == "POST":
+        cache.delete("combo")  # 删除缓存
+
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -259,6 +277,7 @@ def delete_taocan_project(request):
     :return:
     """
     if request.method == "POST":
+        cache.delete("combo")  # 删除缓存
         data = json.loads(request.body.decode())
 
         result = delete_pro_in_taocan(**data)
