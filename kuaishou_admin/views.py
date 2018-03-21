@@ -1,13 +1,14 @@
 import logging
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponseRedirect
 from hashids import Hashids
-from kuaishou_admin.models import Order, Client, AdminManagement
+from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion
 import json
 from django.core.paginator import Paginator
-
+from django.core.cache import cache
 # Create your views here.
-from utils.views import  login_admin_required_json
+from utils.views import login_admin_required_json
 
 encrypt = Hashids()
 logger = logging.getLogger("django_admin")
@@ -18,27 +19,15 @@ logger = logging.getLogger("django_admin")
 新的在backmanage里面：zhouzhou
 
 '''
-# @login_admin_required_json
-def LoginView( request):
-    data = json.loads(request.body.decode())
-    user_name = data["user"]
-    password = data["pwd"]
-    # 认证用户
-    user = authenticate(username=user_name, password=password)
-    if user is None:
-        return JsonResponse(data={"msg": False})
 
-    # 保存用户登陆session信息
-    login(request, user)
-    # 跳转到主页
-    return JsonResponse(data={"msg": True})
+# @login_admin_required_json
 
 
 '''退出'''
 
 
 @login_admin_required_json
-def LogoutView( request):
+def LogoutView(request):
     if request.method == "POST":
         logout(request)
         return JsonResponse(data={"msg": "logout success"})
@@ -48,7 +37,7 @@ def LogoutView( request):
 
 
 @login_admin_required_json
-def RealOrdersView( request):
+def RealOrdersView(request):
     '''实时订单，返回30条数据'''
     if request.method == "POST":
         if request.user.is_superuser:
@@ -62,8 +51,10 @@ def RealOrdersView( request):
 xialing
 
 """
+
+
 @login_admin_required_json
-def OptionSearchView( request):
+def OptionSearchView(request):
     # if not request.user.is_superuser:
     #     return JsonResponse(data={"msg": "未登录"})
 
@@ -72,9 +63,9 @@ def OptionSearchView( request):
         data = json.loads(request.body.decode())
 
         detail_pro = data.get('detail_pro')
-        print(detail_pro)
+
         order_type = data.get('order_type')
-        print(order_type)
+
         page = data.get("page", 1)
         # 一页几条数据
         num_page = data.get("num_page", 10)
@@ -84,7 +75,7 @@ def OptionSearchView( request):
             page = int(page)
 
         except Exception as e:
-            print(e)
+            return JsonResponse(data={"status": 3103, "msg": "数据错误", })
 
         if detail_pro == "所有项目" and order_type == "0":
             orders = Order.objects.all()
@@ -94,7 +85,6 @@ def OptionSearchView( request):
             orders = Order.objects.filter(type_id=1).all()
         elif detail_pro == "套餐订单":
             orders = Order.objects.filter(type_id=1, status=order_type).all()
-            print(orders)
         else:
             if order_type == '0':
                 orders = Order.objects.filter(project__pro_name__exact=detail_pro).all()
@@ -132,8 +122,9 @@ xialing and zhouzhou
 
 '''
 
+
 @login_admin_required_json
-def EnterSearchView( request):
+def EnterSearchView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         if "kuaishou_id" in data:
@@ -142,7 +133,7 @@ def EnterSearchView( request):
         else:
             hs_order_id = data["order_id"]
             order_id = encrypt.decode(hs_order_id)[0]
-            print(order_id)
+
             orders = Order.objects.filter(order_id_num=order_id).all()
 
         message = []
@@ -166,18 +157,19 @@ zhouzhou xialing
 
 '''
 
+
 @login_admin_required_json
-def UserSearchView( request):
+def UserSearchView(request):
     if request.method == "POST":
         '''搜索功能'''
         data = json.loads(request.body.decode())
         result = []
-        print(data.get('user_id'))
+
         if data.get('user_id'):
             user_id = int(data.get("user_id")) - 1000
             if user_id < 0:
                 return JsonResponse
-            print(user_id)
+
             users = Client.objects.filter(id=user_id).all()
         else:
             users = Client.objects.filter(name=data.get("user_name")).all()
@@ -196,19 +188,19 @@ xialing
 
 '''
 
+
 @login_admin_required_json
-def ModifyStatusView( request):
+def ModifyStatusView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
         order_status = data.get("order_status")
         hs_order_id = data.get('order_id')
-        print(hs_order_id)
+
         order_id = encrypt.decode(hs_order_id)[0]
-        print(order_id)
 
         order = Order.objects.filter(order_id_num=order_id).update(status=order_status)
-        print(order)
+
         if not order:
             return JsonResponse(data={"msg": False})
         return JsonResponse({'msg': True})
@@ -220,9 +212,10 @@ def ModifyStatusView( request):
 xialing
 
 '''
-@login_admin_required_json
-def ModifyGoldView( request):
 
+
+@login_admin_required_json
+def ModifyGoldView(request):
     # 获取用户的id,和需要修改的金币数
     if request.method == "POST":
         data = json.loads(request.body.decode())
@@ -244,8 +237,10 @@ def ModifyGoldView( request):
 '''
 xialing
 '''
+
+
 @login_admin_required_json
-def UserListView( request):
+def UserListView(request):
     # if not request.user.is_superuser:
     #     return JsonResponse(data={"msg": "未登录"})
     if request.method == "POST":
@@ -260,22 +255,71 @@ def UserListView( request):
         p = Paginator(content, 30)
         pages_ss = p.page(1).object_list
         return JsonResponse(data={"msg": pages_ss})
+
+
 '''
 written by Despair
 '''
+
+
 @login_admin_required_json
 def add_wechat(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         wechat_id = data.get("wechat_id")
+        type = data.get("type")  # 判断是增加微信号还是删除微信号
+        cache.delete("admins")  # 删除缓存
+        admin_set = AdminManagement.objects.filter(wechat=wechat_id)
+        if type == 1:
+            admin = admin_set.first()
+            if admin is not None:
+                if admin.isdelete == 0:
+                    return JsonResponse(data={"status": 0, "msg": "此微信号已添加"})
+            try:
+                admins = AdminManagement()
+                admins.wechat = wechat_id
+                admins.save()
+            except Exception as e:
+                logger.error(e)
+                return JsonResponse(data={"status": 4001, "msg": "修改错误"})
+            return JsonResponse(data={"status": 0, "msg": "添加成功"})
+        elif type == 2:
+            if admin_set.first() is None:
+                return JsonResponse(data={"status": 3103, "msg": "输入正确的号码"})
 
-        admin = AdminManagement(wechat=wechat_id)
-        if admin is not None:
-            return JsonResponse(data={"status": 0, "msg": "此微信号已添加"})
-        try:
-            admin.wechat = wechat_id
-            admin.save()
-        except Exception as e:
-            logger.error(e)
-            return JsonResponse(data={"status": 4001, "msg": "修改错误"})
-        return JsonResponse(data={"status": 0, "msg": "添加成功"})
+            try:
+                admin_set.delete()
+            except Exception as e:
+                logger.error(e)
+                return JsonResponse(data={"status": 2001, "msg": "操作失败"})
+            return JsonResponse(data={"status": 0})
+        else:
+            return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
+
+
+'''
+written by Despair
+'''
+
+
+@login_admin_required_json
+def new_version_update(request):
+    '''版本更新'''
+    data = json.loads(request.body.decode())
+    version_code = data.get("version_code")
+    sdk_url = data.get("sdk_url")
+    update_msg = data.get("update_msg")
+    cache.delete("version")  # 删除缓存
+    try:
+        version_query = CheckVersion.objects
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 2001, "msg": "查询错误"})
+    try:
+        version = version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
+
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 3107, "msg": "修改失败"})
+
+    return JsonResponse(data={"status": 0})

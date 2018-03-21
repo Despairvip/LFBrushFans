@@ -8,7 +8,6 @@ import requests
 from sfpt import settings
 
 from django.core.paginator import Paginator
-from django.db.models import  Q
 from django.http import JsonResponse
 from hashids import Hashids
 
@@ -18,6 +17,7 @@ from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
+from django.core.cache import cache
 
 down = gifshow()
 # 实例化一个加密对象
@@ -36,7 +36,7 @@ def ClickView(request):
         click_num = data.get('click_num')
         need_gold = data.get('gold')
         client_id = data.get("user_id")
-        print(client_id)
+
         wechat_id = handle_user_id(data.get('user_id'))
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
@@ -59,10 +59,6 @@ def ClickView(request):
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
-
-
-
-
 
         # ----------------订单操作---------------
         order_id = create_num(wechat_id, project_id)
@@ -117,7 +113,6 @@ def PlayView(request):
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
-
         # -----------订单处理-------------------
         order_id = create_num(user_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
@@ -159,7 +154,6 @@ def FansView(request):
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
             if client.token != token:
-                print(client.token)
                 return JsonResponse(data={"status": 5003, "msg": "token验证不通过"})
         except Exception as e:
             logger.error(e)
@@ -173,7 +167,6 @@ def FansView(request):
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
 
         if not conditions(client, need_gold):
-            print(need_gold)
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
         order_id = create_num(wechat_id, project_id)
@@ -207,7 +200,6 @@ def FansView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, 'msg': print(e)})
-
 
         return JsonResponse(data={'status': 0, 'order_num': hs_order_id_num})
 
@@ -329,12 +321,15 @@ def IntegralView(request):
                     client.save()
                     return JsonResponse({"code": 0, "msg": "支付成功"})
 
+
 '''
 xialing:alipay，qq登陆,wechat登陆
 zhouzhou:wechatpay,wechat登陆
 
 
 '''
+
+
 @check_token
 def PayApi(request):
     if request.method == "POST":
@@ -355,7 +350,7 @@ def PayApi(request):
                     subject="LFBrushFans%s" % order_id,
                     notify_url='http://120.26.60.181:8001/pay/new/notify/alipay'  # 可选, 不填则使用默认notify url
                 )
-                print(order_id)
+
                 hs_order_id = q.encode(int(order_id))
                 return JsonResponse(data={"status": 0, "ali_msg": order_string, "order_id": hs_order_id})
             wechat_pay = create_wechat()
@@ -376,11 +371,12 @@ def PayApi(request):
             return JsonResponse({"status": 3001, 'msg': "异常重新尝试"})
 
 
-
 '''
 
 xialing
 '''
+
+
 @check_token
 def CenterView(request):
     if request.method == "POST":
@@ -391,13 +387,18 @@ def CenterView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 5003, 'msg': "没有查到用户信息"})
+        if user is None:
+            return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
         content = user.to_dict()
-        return JsonResponse(data={"status": 0,"data":content})
+        return JsonResponse(data={"status": 0, "data": content})
+
 
 '''
 
 xialing
 '''
+
+
 @check_token
 def DownloadView(request):
     if request.method == "POST":
@@ -409,17 +410,19 @@ def DownloadView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4003, "msg": "格式错误"})
-        print(photoId.encode())
+
         hs_link = down.photo_info(photoId)
-        print(type(hs_link))
-        print(hs_link)
+
         link = hs_link["photos"][0]["main_mv_urls"][0]["url"]
         return JsonResponse(data={"status": 0, 'link': link})
+
 
 '''
 xialing
 
 '''
+
+
 @check_token
 def NotesView(request):
     if request.method == "POST":
@@ -456,10 +459,13 @@ def NotesView(request):
         pages_ss = p.page(page).object_list
         return JsonResponse(data={"status": 0, "data": pages_ss, "count": count, "pages": pages})
 
+
 '''
 xialing and zhouzhou
 
 '''
+
+
 def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
@@ -475,13 +481,13 @@ def ClientLoginView(request):
                         appid, secret, code))
             else:
                 return JsonResponse(data={"status": 4003, "msg": 'code错误'})
-            print(res)
+
             res_dict = res.json()
             if res_dict.get('errcode') is not None:
                 return JsonResponse(data={"status": 4003, "msg": res_dict.get("errcode")})
             res_data_openid = res_dict['openid']
             token = res_dict['access_token']
-            print(token)
+
             user_info = requests.get('https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s' % (
                 token, res_data_openid)).json()
 
@@ -513,7 +519,7 @@ def ClientLoginView(request):
         oauth_consumer_key = data.get('oauth_consumer_key')
         token = data.get("access_token")
         res = requests.get('https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
-        token, oauth_consumer_key, openid)).json()
+            token, oauth_consumer_key, openid)).json()
 
         avatar = res.get("figureurl_qq_1")
         nickname = res.get("nickname")
@@ -521,51 +527,84 @@ def ClientLoginView(request):
         if client is not None:
             client.token = token
             client.save()
-            return JsonResponse(data={"status":0,"data":client.to_dict(),"token":token})
+            return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
         try:
-            client = Client(username=nickname,avatar=avatar,unionid=openid,login_type=1,token=token)
+            client = Client(username=nickname, avatar=avatar, unionid=openid, login_type=1, token=token)
             client.save()
         except Exception as e:
-            return JsonResponse({"msg":print(e)})
+            return JsonResponse({"msg": print(e)})
         content = client.to_dict()
-        print(content)
-        return JsonResponse(data={"status":0,'data':content,"token":token})
+
+        return JsonResponse(data={"status": 0, 'data': content, "token": token})
+
 
 """written by Despair"""
+
+
 def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
+    content = cache.get("version")
+    if content is not None:
+        version = content.get("version")
+        sdk_url = content.get("sdk_url")
+        if int(version) > version_code:
+            return JsonResponse(data={"status": 4203, "data": sdk_url})
+
     try:
         # 获取最新版本号
-        version = CheckVersion.objects.values("version")[0].get("version")
-        print(version)
+        version_query = CheckVersion.objects
+        version_set = version_query.first()
+        version = version_set.version
+
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
     if version is None:
         return JsonResponse(data={"status": 4001, "msg": "获取版本号失败"})
 
-    # 进行对比
+        # 进行对比
     if int(version) > version_code:
-        return JsonResponse(data={"status": 0, "msg": "需要更新", "data": version})
+        sdk_url = version_set.sdk_url
+        # 添加缓存数据
+        content = {
+            "version":version,
+            "sdk_url":sdk_url
+        }
+        cache.set("version",content,86400)
 
-    return JsonResponse(data={"status": 0, "msg": "不需要更新"})
+        return JsonResponse(data={"status": 4203, "data": sdk_url})
+
+    return JsonResponse(data={"status": 0})
+
 
 """written by Despair"""
+
+
 def admin_id(request):
     '''客服微信号列表'''
-    try:
-        admin_ids = AdminManagement.objects.all()
-    except Exception as e:
-        logger.error(e)
-        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
-    if admin_ids is None:
-        return JsonResponse(data={"status": 4001, "msg": "没有数据"})
-    content = []
-    for admin in admin_ids:
-        content.append(admin.wechat)
+    content = cache.get("admins")
+    if content is None:
+        try:
+            admin_ids = AdminManagement.objects.all()
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
+        if admin_ids is None:
+            return JsonResponse(data={"status": 4001, "msg": "没有数据"})
+        content = []
+        for admin in admin_ids:
+            content.append(admin.wechat)
+        content = cache.set("admins",content,86400)
+    return JsonResponse(data={"status": 0, "data": content})
 
-    return JsonResponse(data={"status" : 0,"data":content})
+
+"""written by Despair"""
 
 
+def shield_wechat(request):
+    '''written by Despair
+     屏蔽微信登陸
+     '''
+    return JsonResponse(data={"data": False})

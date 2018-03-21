@@ -4,14 +4,11 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-
-
-
 # Create your models here.
 class Client(AbstractUser):
     choices_login_type = (
-        (0,"微信登陆"),
-        (1,'qq登陆')
+        (0, "微信登陆"),
+        (1, 'qq登陆')
     )
     hands_id = models.CharField(max_length=20, default='')
     # 总消费
@@ -26,15 +23,16 @@ class Client(AbstractUser):
     avatar = models.CharField(max_length=500, default='', null=True)
 
     token = models.CharField(max_length=500, default='')
-    unionid = models.CharField(max_length=500,default='',null=True)
-    login_type = models.IntegerField(default=0,choices=choices_login_type)
+    unionid = models.CharField(max_length=500, default='', null=True)
+    login_type = models.IntegerField(default=0, choices=choices_login_type)
     version = models.IntegerField(default=1)
+
     def __str__(self):
         return self.username
 
     def to_dict(self):
         dict = {
-            "user_id": 1000+self.id,
+            "user_id": 1000 + self.id,
             "user_name": self.username,
             "gold": self.gold,
             "phone_num": self.phone_num,
@@ -51,22 +49,22 @@ class Project(models.Model):
     '''
     项目表
     '''
-    choice_pro_type =(
-        (1,"刷粉丝"),
-        (2,"刷双击"),
-        (3,"刷播放"),
+    choice_pro_type = (
+        (1, "刷粉丝"),
+        (2, "刷双击"),
+        (3, "刷播放"),
 
     )
     pro_name = models.CharField(max_length=100, blank=False)
     count_project = models.IntegerField(default=0)
-    pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'),null=True)
-    pro_type = models.IntegerField(default=1,choices=choice_pro_type)
+    pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'), null=True)
+    pro_type = models.IntegerField(default=1, choices=choice_pro_type)
 
     def to_dict(self):
         data = {
-            "pro_id":self.id,
-            "pro_count":self.count_project,
-            "pro_gold":self.pro_gold,
+            "pro_id": self.id,
+            "pro_count": self.count_project,
+            "pro_gold": self.pro_gold,
         }
         return data
 
@@ -155,6 +153,7 @@ class Combo_project(models.Model):
     class Meta:
         db_table = "combo_project"
 
+
 class Order_combo(models.Model):
     '''
     套餐表
@@ -162,13 +161,13 @@ class Order_combo(models.Model):
     name = models.CharField(max_length=100, null=False)
     detail_combo = models.ManyToManyField('Project', blank=True)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
-    project_detail = models.ManyToManyField('Combo_project')
+    project_detail = models.ManyToManyField('Combo_project', null=False)
 
     def to_dict(self):
         data = {
-            "pro_id":self.id,
-            "pro_name":self.name,
-            "pro_gold":self.pro_gold,
+            "pro_id": self.id,
+            "pro_name": self.name,
+            "pro_gold": self.pro_gold,
         }
         return data
 
@@ -177,8 +176,6 @@ class Order_combo(models.Model):
 
     class Meta:
         db_table = "kuaishou_combo"
-
-
 
 
 class Old_Order_project(models.Model):
@@ -195,9 +192,13 @@ class Old_Order_project(models.Model):
     class Meta:
         db_table = "kuaishou_expend_ord"
 
-class AdminManagement(models.Model):
-    wechat = models.CharField(max_length=100,default='',null=True)
 
+class AdminManagement(models.Model):
+    choice_delete = (
+        (0,"正常"),
+        (1,"删除")
+    )
+    wechat = models.CharField(max_length=100, default='', null=True)
     def __str__(self):
         return self.wecaht
 
@@ -206,7 +207,9 @@ class AdminManagement(models.Model):
 
 
 class CheckVersion(models.Model):
-    version = models.CharField(max_length=100,default=1)
+    version = models.CharField(max_length=100, default=1)
+    sdk_url = models.CharField(max_length=500, default='1')
+    update_msg = models.CharField(max_length=1000, default='1')
 
     def __str__(self):
         return self.version

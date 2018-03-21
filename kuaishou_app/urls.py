@@ -14,4 +14,5 @@ urlpatterns = [
         url(r'^pay$', views.PayApi),
         url(r'^version$', views.check_update),
         url(r'^admins$', views.admin_id),
+        url(r'^shield$', views.shield_wechat),
 ]
