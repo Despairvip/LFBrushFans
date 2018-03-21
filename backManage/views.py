@@ -100,7 +100,8 @@ def showProject(request):
                     pro_msg = {}
                     pro_msg['id'] = project.id
                     pro_msg['name'] = project.pro_name
-                    pro_msg['count'] = project.pro_gold
+                    pro_msg['count'] = project.count_project
+                    pro_msg['gold'] = project.pro_gold
                     data.append(pro_msg)
                 return JsonResponse({"status": 0, "data": data})
             else:
@@ -135,7 +136,7 @@ def deleteProject(request):
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
 
 
-@login_required
+# @login_required
 def taocanManage(request):
     '''
     创建套餐

@@ -179,7 +179,7 @@ ALIPAY_APPID = 	"2016091100488045"
 
 AUTH_USER_MODEL = 'kuaishou_admin.Client'
 
-LOGIN_URL = "/login/"
+LOGIN_URL = "/index/"
 
 # alipay
 ALIPAY_APPID = 	" 2018011601908317"
