@@ -22,11 +22,11 @@ start() {
         mv -f /home/sfpt-server/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
         mv /home/sfpt-server/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
     elif [ "$EVN" = "prerelease" ]; then
-        mv -f /home/sfpt-server/conf/nginx_debug.conf /etc/nginx/conf.d/sfpt.conf
-        mv /home/sfpt-server/conf/supervisor_debug.conf /etc/supervisor/conf.d/sfpt.conf
+        mv -f /home/sfpt-server/conf/nginx_prerelease.conf /etc/nginx/conf.d/sfpt.conf
+        mv /home/sfpt-server/conf/supervisor_prerelease.conf /etc/supervisor/conf.d/sfpt.conf
     else
-        mv -f /home/sfpt-server/conf/nginx.conf /etc/nginx/conf.d/sfpt.conf
-        mv /home/sfpt-server/conf/supervisor.conf /etc/supervisor/conf.d/sfpt.conf
+        mv -f /home/sfpt-server/conf/nginx_release.conf /etc/nginx/conf.d/sfpt.conf
+        mv /home/sfpt-server/conf/supervisor_release.conf /etc/supervisor/conf.d/sfpt.conf
     fi
 
 

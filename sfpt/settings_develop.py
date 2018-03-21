@@ -10,9 +10,9 @@ pymysql.install_as_MySQLdb()
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'LFbrushFans',
+        'NAME': 'LFBrushFans',
         'USER': 'root',
-        'PASSWORD': '',
+        'PASSWORD': 'mysql',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -30,4 +30,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, '/static/').replace('\\', '/')
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
-

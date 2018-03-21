@@ -30,7 +30,7 @@ class Client(AbstractUser):
     login_type = models.IntegerField(default=0,choices=choices_login_type)
     version = models.IntegerField(default=1)
     def __str__(self):
-        return self.name
+        return self.username
 
     def to_dict(self):
         dict = {
@@ -51,10 +51,16 @@ class Project(models.Model):
     '''
     项目表
     '''
+    choice_pro_type =(
+        (1,"刷粉丝"),
+        (2,"刷双击"),
+        (3,"刷播放"),
+
+    )
     pro_name = models.CharField(max_length=100, blank=False)
     count_project = models.IntegerField(default=0)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'),null=True)
-    img_url = models.CharField(max_length=100, default="")
+    pro_type = models.IntegerField(default=1,choices=choice_pro_type)
 
     def to_dict(self):
         data = {
