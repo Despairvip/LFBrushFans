@@ -6,10 +6,6 @@ file:views.py
 IDE:PyCharm
 '''
 
-''' Despair modified with 2018-3-21
-    添加修改数据库，删除缓存机制
-'''
-
 import base64
 import json
 
@@ -21,8 +17,8 @@ from django.shortcuts import render
 
 # Create your views here.
 
-
 from backManage.libs_save_results import save_taocan_detail, update_taocan, delete_pro_in_taocan
+from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client
 
 
@@ -34,7 +30,6 @@ def proManage(request):
     :return:
     '''
     if request.method == "POST":
-
         user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -43,7 +38,7 @@ def proManage(request):
                 proName = data["name"]
                 proNum = data["num"]
                 gold = data["gold"]
-                proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum)
+                proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
                 if proj is not None:
                     return JsonResponse({"status": 500, "msg": "this project exists"})
                 if Project.objects.create(pro_name=proName, pro_gold=gold, count_project=proNum):
@@ -62,7 +57,6 @@ def changeProManage(request):
     :return:
     """
     if request.method == "POST":
-
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -90,9 +84,55 @@ def changeProManage(request):
 
 
 @login_required
+def ShowAll(request):
+    """
+    显示所有的项目（套餐和小项目）
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        user = request.session["name"]
+        user_client = Client.objects.filter(username=user).first()
+        if user_client is not None:
+            if user_client.is_superuser:
+                projects = Project.objects.all()
+                data = []
+                # print(request.session["name"])
+                for project in projects:
+                    pro_msg = {}
+                    pro_msg["detail"] = {}
+                    pro_msg['pro_id'] = project.id
+                    pro_msg['name'] = project.pro_name
+                    pro_msg['detail']['num'] = project.count_project
+                    pro_msg['gold'] = project.pro_gold
+                    data.append(pro_msg)
+                taocans = Order_combo.objects.all().prefetch_related('project_detail')
+
+                for taocan in taocans:
+                    taocan_msg = {}
+                    taocan_msg['combo_id'] = taocan.id
+                    taocan_msg['name'] = taocan.name
+                    taocan_msg['gold'] = taocan.pro_gold
+
+                    taocan_msg['detail'] = []
+                    for detail in taocan.project_detail.all():
+                        taocan_msg['detail'].append({
+                            'project_name': detail.pro_name,
+                            'project_num': detail.count_project,
+                            'project_id': detail.id,
+                        })
+                    data.append(taocan_msg)
+                return MessageResponse(0, data)
+            else:
+                return MessageResponse(3105)
+        else:
+            return MessageResponse(3104)
+
+
+@login_required
 def showProject(request):
     """
-    显示项目总类
+    显示全部项目
     :param request:
     :return:
     """
@@ -106,9 +146,11 @@ def showProject(request):
                 # print(request.session["name"])
                 for project in projects:
                     pro_msg = {}
+                    pro_msg["detail"] = {}
                     pro_msg['id'] = project.id
                     pro_msg['name'] = project.pro_name
-                    pro_msg['count'] = project.pro_gold
+                    pro_msg['detail']['num'] = project.count_project
+                    pro_msg['gold'] = project.pro_gold
                     data.append(pro_msg)
                 return JsonResponse({"status": 0, "data": data})
             else:
@@ -125,7 +167,6 @@ def deleteProject(request):
     :return:
     """
     if request.method == "POST":
-
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -144,7 +185,7 @@ def deleteProject(request):
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
 
 
-@login_required
+# @login_required
 def taocanManage(request):
     '''
     创建套餐
@@ -152,26 +193,12 @@ def taocanManage(request):
     :return:
     '''
     if request.method == "POST":
-
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
 
-                # taocan_name = data['name']
-                # taocan_gold = data['gold']
-                #
-                # projectOneName = data['detail'][0]['proName']
-                # projectOneNum = data['detail'][0]['num']
-                # print('********')
-                # print(projectOneNum)
-                #
-                # projectTwoName = data['detail'][1]['proName']
-                # projectTwoNum = data['detail'][1]['num']
-                #
-                # projectThreeName = data['detail'][2]['proName']
-                # projectThreeNum = data['detail'][2]['num']
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:
@@ -218,7 +245,6 @@ def showTaocan(request):
 @login_required
 def changeTaocan(request):
     if request.method == "POST":
-
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -240,7 +266,6 @@ def changeTaocan(request):
 @login_required
 def deleteTaocan(request):
     if request.method == "POST":
-
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -308,3 +333,9 @@ def login_houtai(request):
 def index(request):
     if request.method == "GET":
         return render(request, "kuaishou_admin/index.html")
+
+
+def test(request):
+    if request.method == "POST":
+        data = {"name": "zz"}
+        return MessageResponse(2001)
