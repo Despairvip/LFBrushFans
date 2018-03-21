@@ -20,7 +20,7 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
-from django.core.cache import cache
+
 
 from backManage.libs_save_results import save_taocan_detail, update_taocan, delete_pro_in_taocan
 from kuaishou_admin.models import Order_combo, Project, Client
@@ -34,9 +34,7 @@ def proManage(request):
     :return:
     '''
     if request.method == "POST":
-        cache.delte("play")
-        cache.delte("fans")  # 删除缓存
-        cache.delte("click")
+
         user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -64,9 +62,7 @@ def changeProManage(request):
     :return:
     """
     if request.method == "POST":
-        cache.delte("play")
-        cache.delte("fans")  # 删除缓存
-        cache.delte("click")
+
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -129,9 +125,7 @@ def deleteProject(request):
     :return:
     """
     if request.method == "POST":
-        cache.delte("play")
-        cache.delte("fans")  # 删除缓存
-        cache.delte("click")
+
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -158,7 +152,7 @@ def taocanManage(request):
     :return:
     '''
     if request.method == "POST":
-        cache.delete("combo")  # 删除缓存
+
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
@@ -224,7 +218,6 @@ def showTaocan(request):
 @login_required
 def changeTaocan(request):
     if request.method == "POST":
-        cache.delete("combo")  # 删除缓存
 
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
@@ -247,7 +240,6 @@ def changeTaocan(request):
 @login_required
 def deleteTaocan(request):
     if request.method == "POST":
-        cache.delete("combo")  # 删除缓存
 
         user = request.session["name"]
         user_client = Client.objects.filter(username=user).first()
@@ -277,7 +269,7 @@ def delete_taocan_project(request):
     :return:
     """
     if request.method == "POST":
-        cache.delete("combo")  # 删除缓存
+
         data = json.loads(request.body.decode())
 
         result = delete_pro_in_taocan(**data)
