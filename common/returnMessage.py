@@ -33,7 +33,7 @@ code_msg_list = [
 code_msgs = namedtuple('code_msgs',["code","msg"])
 
 
-def MessageResponse(num):
+def MessageResponse(num,data=None):
     '''
     错误消息或者正确消息的重新返回处理
     :param num:
@@ -42,4 +42,6 @@ def MessageResponse(num):
     for code_msg in code_msg_list:
         code_msg_name = code_msgs._make(code_msg)
         if code_msg_name.code == num:
+            if num == 0:
+                return JsonResponse({"status":num,"msg":code_msg_name.msg,"data":data})
             return JsonResponse({"status":code_msg_name.code,"msg":code_msg_name.msg})
