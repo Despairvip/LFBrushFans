@@ -6,7 +6,7 @@ from hashids import Hashids
 from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion
 import json
 from django.core.paginator import Paginator
-
+from django.core.cache import cache
 # Create your views here.
 from utils.views import login_admin_required_json
 
@@ -19,7 +19,6 @@ logger = logging.getLogger("django_admin")
 新的在backmanage里面：zhouzhou
 
 '''
-
 
 # @login_admin_required_json
 
@@ -269,7 +268,7 @@ def add_wechat(request):
         data = json.loads(request.body.decode())
         wechat_id = data.get("wechat_id")
         type = data.get("type")  # 判断是增加微信号还是删除微信号
-
+        cache.delete("admins")  # 删除缓存
         admin_set = AdminManagement.objects.filter(wechat=wechat_id)
         if type == 1:
             admin = admin_set.first()
@@ -310,7 +309,7 @@ def new_version_update(request):
     version_code = data.get("version_code")
     sdk_url = data.get("sdk_url")
     update_msg = data.get("update_msg")
-
+    cache.delete("version")  # 删除缓存
     try:
         version_query = CheckVersion.objects
     except Exception as e:
