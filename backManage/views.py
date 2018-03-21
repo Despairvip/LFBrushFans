@@ -16,7 +16,8 @@ from django.http import JsonResponse
 from django.shortcuts import render
 
 # Create your views here.
-from backManage.libs_save_results import  save_taocan_detail, update_taocan, delete_pro_in_taocan
+
+from backManage.libs_save_results import save_taocan_detail, update_taocan, delete_pro_in_taocan
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client
 
@@ -37,9 +38,9 @@ def proManage(request):
                 proName = data["name"]
                 proNum = data["num"]
                 gold = data["gold"]
-                proj = Project.objects.filter(pro_name=proName,pro_gold=gold,count_project=proNum).first()
+                proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
                 if proj is not None:
-                    return JsonResponse({"status":500,"msg":"this project exists"})
+                    return JsonResponse({"status": 500, "msg": "this project exists"})
                 if Project.objects.create(pro_name=proName, pro_gold=gold, count_project=proNum):
                     return JsonResponse({'status': 0})
             else:
@@ -121,13 +122,11 @@ def ShowAll(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
-                return MessageResponse(0,data)
+                return MessageResponse(0, data)
             else:
                 return MessageResponse(3105)
         else:
             return MessageResponse(3104)
-
-
 
 
 @login_required
@@ -147,7 +146,7 @@ def showProject(request):
                 # print(request.session["name"])
                 for project in projects:
                     pro_msg = {}
-                    pro_msg["detail"]={}
+                    pro_msg["detail"] = {}
                     pro_msg['id'] = project.id
                     pro_msg['name'] = project.pro_name
                     pro_msg['detail']['num'] = project.count_project
@@ -158,8 +157,6 @@ def showProject(request):
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
-
-
 
 
 @login_required
@@ -238,7 +235,6 @@ def showTaocan(request):
                         })
                     data.append(taocan_msg)
 
-
                 return JsonResponse({"data": data})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
@@ -254,7 +250,6 @@ def changeTaocan(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-
 
                 result = update_taocan(**data)
 
@@ -299,6 +294,7 @@ def delete_taocan_project(request):
     :return:
     """
     if request.method == "POST":
+
         data = json.loads(request.body.decode())
 
         result = delete_pro_in_taocan(**data)
@@ -341,5 +337,5 @@ def index(request):
 
 def test(request):
     if request.method == "POST":
-        data = {"name":"zz"}
+        data = {"name": "zz"}
         return MessageResponse(2001)

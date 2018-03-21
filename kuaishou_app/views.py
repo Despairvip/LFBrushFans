@@ -17,7 +17,7 @@ from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
-from django.core.cache import cache
+
 
 down = gifshow()
 # 实例化一个加密对象
@@ -545,13 +545,6 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
-    content = cache.get("version")
-    if content is not None:
-        version = content.get("version")
-        sdk_url = content.get("sdk_url")
-        if int(version) > version_code:
-            return JsonResponse(data={"status": 4203, "data": sdk_url})
-
     try:
         # 获取最新版本号
         version_query = CheckVersion.objects
@@ -562,18 +555,11 @@ def check_update(request):
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
     if version is None:
-        return JsonResponse(data={"status": 4001, "msg": "获取版本号失败"})
+        return JsonResponse(data={"status": 4002, "msg": "获取版本号失败"})
 
         # 进行对比
     if int(version) > version_code:
         sdk_url = version_set.sdk_url
-        # 添加缓存数据
-        content = {
-            "version":version,
-            "sdk_url":sdk_url
-        }
-        cache.set("version",content,86400)
-
         return JsonResponse(data={"status": 4203, "data": sdk_url})
 
     return JsonResponse(data={"status": 0})
@@ -584,19 +570,17 @@ def check_update(request):
 
 def admin_id(request):
     '''客服微信号列表'''
-    content = cache.get("admins")
-    if content is None:
-        try:
-            admin_ids = AdminManagement.objects.all()
-        except Exception as e:
-            logger.error(e)
-            return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
-        if admin_ids is None:
-            return JsonResponse(data={"status": 4001, "msg": "没有数据"})
-        content = []
-        for admin in admin_ids:
-            content.append(admin.wechat)
-        content = cache.set("admins",content,86400)
+
+    try:
+        admin_ids = AdminManagement.objects.all()
+    except Exception as e:
+        logger.error(e)
+        return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
+    if admin_ids is None:
+        return JsonResponse(data={"status": 4001, "msg": "没有数据"})
+    content = []
+    for admin in admin_ids:
+        content.append(admin.wechat)
     return JsonResponse(data={"status": 0, "data": content})
 
 
