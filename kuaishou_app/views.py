@@ -5,6 +5,8 @@ import re
 
 import redis
 import requests
+from django.http import HttpResponseRedirect
+
 from sfpt import settings
 
 from django.core.paginator import Paginator
@@ -37,11 +39,16 @@ def ClickView(request):
         need_gold = data.get('gold')
         client_id = data.get("user_id")
 
-        wechat_id = handle_user_id(data.get('user_id'))
+
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
         token = data.get("token")
 
+        if not all([works_link, need_gold, click_num, project_id, client_id,client_id]):
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
+        wechat_id = handle_user_id(data.get('user_id'))
+        if len(client_id) != 4:
+            return JsonResponse(data={"status" : 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
             if client is None:
@@ -50,7 +57,7 @@ def ClickView(request):
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
         if client.token != token:
-            return JsonResponse(data={"status": 5003, "msg": "用户token"})
+            return JsonResponse(data={"status": 5003, "msg": "用户token错误"})
 
         project = Project.objects.filter(id=project_id).first()
 
@@ -87,16 +94,21 @@ def ClickView(request):
 def PlayView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        works_link = data['works']
-        play_num = data['play_num']
-        need_gold = data['gold']
-        project_id = data['project_id']
+        works_link = data.get('works')
+        play_num = data.get('play_num')
+        need_gold = data.get('gold')
+        project_id = data.get('project_id')
         client_id = data.get("user_id")
-        user_id = handle_user_id(data.get('user_id'))
-        kuaishou_id = data['hands_id']
+
+        kuaishou_id = data.get('hands_id')
 
         token = data.get("token")
 
+        if not all([works_link, need_gold, play_num, project_id,client_id]):
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
+        user_id = handle_user_id(data.get('user_id'))
+        if len(client_id) != 4:
+            return JsonResponse(data={"status" : 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
             if not client:
@@ -144,11 +156,16 @@ def FansView(request):
         hands_id = data.get("hands_id")
         fan_num = data.get("fan_num")
         need_gold = int(data.get("gold"))
-        wechat_id = handle_user_id(data.get('user_id'))
         project_id = data.get("project_id")
         client_id = data.get("user_id")
         token = data.get("token")
 
+        if not all([hands_id, need_gold, fan_num, client_id,hands_id]):
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
+        wechat_id = handle_user_id(data.get('user_id'))
+
+        if len(client_id) != 4:
+            return JsonResponse(data={"status" : 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
             if client is None:
@@ -208,15 +225,18 @@ def FansView(request):
 def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        package_id = data['package_id']
-        need_gold = data['gold']
-        user_id = handle_user_id(data.get('user_id'))
-        works_link = data['works']
-        kuaishou_id = data['hands_id']
+        package_id = data.get('package_id')
+        need_gold = data.get('gold')
+        works_link = data.get('works')
+        kuaishou_id = data.get('hands_id')
         client_id = data.get("user_id")
-
         token = data.get("token")
+        if not all([package_id,need_gold,works_link,kuaishou_id,client_id]):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        user_id = handle_user_id(data.get('user_id'))
 
+        if len(client_id) != 4:
+            return JsonResponse(data={"status" : 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
             if client is None:
@@ -265,8 +285,12 @@ def IntegralView(request):
         order_id = q.decode(data.get('order_id'))[0]
         gold = data.get('gold')
         pay_type = data.get("pay_type")
-        user_id = handle_user_id(data.get("user_id"))
         token = data.get("token")
+
+        if not all([order_id,gold,pay_type]):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        user_id = handle_user_id(data.get('user_id'))
+
         try:
             client = Client.objects.filter(id=user_id).first()
             pay = PayListModel.objects.filter(order_id=order_id).first()
@@ -334,9 +358,15 @@ zhouzhou:wechatpay,wechat登陆
 def PayApi(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        user_id = handle_user_id(data.get('user_id'))
+        user_id = data.get('user_id')
         money = data.get("money")
         pay_type = data.get("pay_type")
+
+        if not all([user_id,money,pay_type]):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+
+        user_id = handle_user_id(data.get('user_id'))
+
         order_id = create_num(user_id, 1)
         try:
             if pay_type == '0':
@@ -381,6 +411,10 @@ xialing
 def CenterView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
+        client_id = data.get("user_id")
+        if not all(client_id):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+
         user_id = handle_user_id(data.get('user_id'))
         try:
             user = Client.objects.filter(id=user_id).first()
@@ -404,6 +438,9 @@ def DownloadView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works = data.get("works")
+        if not all(works):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+
         # 提取photo_id
         try:
             photoId = re.search(r'photoId=(\d+)', works).group(1)
@@ -427,10 +464,14 @@ xialing
 def NotesView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        user_id = handle_user_id(data.get('user_id'))
+        client_id =data.get('user_id')
         page = data.get("page", 1)
         # 一页几条数据
         num_page = data.get("num_page", 10)
+        if not all(client_id):
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        user_id = handle_user_id(client_id)
+
         try:
             orders = Order.objects.filter(client__id__exact=user_id).all()
         except Exception as e:
@@ -453,7 +494,7 @@ def NotesView(request):
             return JsonResponse(data={"status": 5003, "msg": "用户没有订单"})
         p = Paginator(content, num_page)
         count = p.count
-        if page > count:
+        if int(page) > int(count):
             return JsonResponse("")
         pages = p.num_pages
         pages_ss = p.page(page).object_list
@@ -470,8 +511,11 @@ def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
-        type = data['type']
-        if type == '0':
+        type = data.get('type')
+        if type is None:
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+
+        elif type == '0':
             code = data['code']
             secret = settings.SECRET_APP
             appid = settings.APP_ID
@@ -514,28 +558,31 @@ def ClientLoginView(request):
 
             return JsonResponse(data={"status": 0, "data": content, "token": token})
         # qq登陆
+        elif type == "1":
+            openid = data.get('openid')
+            oauth_consumer_key = data.get('oauth_consumer_key')
+            token = data.get("access_token")
+            res = requests.get('https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
+                token, oauth_consumer_key, openid)).json()
 
-        openid = data.get('openid')
-        oauth_consumer_key = data.get('oauth_consumer_key')
-        token = data.get("access_token")
-        res = requests.get('https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
-            token, oauth_consumer_key, openid)).json()
+            avatar = res.get("figureurl_qq_1")
+            nickname = res.get("nickname")
+            client = Client.objects.filter(unionid=openid).first()
+            if client is not None:
+                client.token = token
+                client.save()
+                return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
+            try:
+                client = Client(username=nickname, avatar=avatar, unionid=openid, login_type=1, token=token)
+                client.save()
+            except Exception as e:
+                return JsonResponse({"msg": print(e)})
+            content = client.to_dict()
 
-        avatar = res.get("figureurl_qq_1")
-        nickname = res.get("nickname")
-        client = Client.objects.filter(unionid=openid).first()
-        if client is not None:
-            client.token = token
-            client.save()
-            return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
-        try:
-            client = Client(username=nickname, avatar=avatar, unionid=openid, login_type=1, token=token)
-            client.save()
-        except Exception as e:
-            return JsonResponse({"msg": print(e)})
-        content = client.to_dict()
+            return JsonResponse(data={"status": 0, 'data': content, "token": token})
+        else:
+            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
 
-        return JsonResponse(data={"status": 0, 'data': content, "token": token})
 
 
 """written by Despair"""
@@ -545,6 +592,12 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
+    if version_code is None:
+        return JsonResponse(data={"status": 3103, "msg": "参数不全"})
+
+    if version_code is None:
+        return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
+
     try:
         # 获取最新版本号
         version_query = CheckVersion.objects
@@ -560,7 +613,12 @@ def check_update(request):
         # 进行对比
     if int(version) > version_code:
         sdk_url = version_set.sdk_url
-        return JsonResponse(data={"status": 4203, "data": sdk_url})
+        update_msg = version_set.update_msg
+        content = {
+            "sdk_url":sdk_url,
+            "update_msg":update_msg
+        }
+        return JsonResponse(data={"status": 4203, "data": content})
 
     return JsonResponse(data={"status": 0})
 

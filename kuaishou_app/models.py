@@ -17,7 +17,7 @@ class PayListModel(models.Model):
 
     order_id = models.CharField("订单号",max_length=200)
     ddh = models.CharField("支付平台订单号",max_length=100,default="")
-    client = models.ForeignKey(Client,null=True)
+    client = models.ForeignKey(Client,null=True,on_delete=models.CASCADE)
     money = models.DecimalField("支付金额", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
     pay_list_date = models.DateTimeField(auto_now_add=True)
     order_type = models.IntegerField("订单类型",choices=choices_ordertype,default=0)
@@ -36,7 +36,7 @@ class SaveOpenId(models.Model):
         (0,'微信登录'),
         (1,'QQ登录')
     )
-    client = models.ForeignKey(Client)
+    client = models.ForeignKey(Client,on_delete=models.CASCADE)
     open_id = models.CharField(max_length=500,default='',null=True)
     open_type = models.IntegerField(choices=choices_type)
 

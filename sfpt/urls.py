@@ -19,8 +19,10 @@ import kuaishou_admin.urls
 import kuaishou_app.urls
 import home.urls
 from backManage import views
+
+
 urlpatterns = [
-    url(r'^admin/', include(admin.site.urls)),
+    url(r'^admin/', admin.site.urls),
     url(r'^', include(kuaishou_admin.urls)),
     url(r'^app/', include(kuaishou_app.urls)),
     url(r'^home/', include(home.urls)),
