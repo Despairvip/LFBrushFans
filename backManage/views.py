@@ -62,7 +62,7 @@ def changeProManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                id = data.get("id")
+                id = data.get("pro_id")
                 name = data.get("name")
                 num = data.get("num")
                 gold = data.get("gold")
@@ -91,7 +91,7 @@ def ShowAll(request):
     :return:
     """
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
@@ -122,14 +122,14 @@ def ShowAll(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
-                return MessageResponse(0, data)
+                return MessageResponse(0, data=data)
             else:
                 return MessageResponse(3105)
         else:
             return MessageResponse(3104)
 
 
-@login_required
+# @login_required
 def showProject(request):
     """
     显示全部项目
@@ -167,12 +167,12 @@ def deleteProject(request):
     :return:
     """
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                project_id = data.get("id")
+                project_id = data.get("pro_id")
 
                 project = Project.objects.filter(id=project_id).first()
                 if project is None:
@@ -185,7 +185,7 @@ def deleteProject(request):
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
 
 
-# @login_required
+@login_required
 def taocanManage(request):
     '''
     创建套餐
@@ -193,12 +193,13 @@ def taocanManage(request):
     :return:
     '''
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-
+                print("********")
+                print(data)
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:
@@ -214,11 +215,14 @@ def taocanManage(request):
 @login_required
 def showTaocan(request):
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
-                taocans = Order_combo.objects.all().prefetch_related('project_detail')
+                try:
+                    taocans = Order_combo.objects.all().prefetch_related('project_detail')
+                except:
+                    return {"status":500,"msg":"查询失败"}
                 data = []
                 for taocan in taocans:
                     taocan_msg = {}
@@ -234,8 +238,8 @@ def showTaocan(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
-
-                return JsonResponse({"data": data})
+                print(data[::-1])
+                return JsonResponse({"data": data[::-1]})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
         else:
@@ -245,7 +249,7 @@ def showTaocan(request):
 @login_required
 def changeTaocan(request):
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
@@ -266,13 +270,13 @@ def changeTaocan(request):
 @login_required
 def deleteTaocan(request):
     if request.method == "POST":
-        user = request.session["name"]
+        user = request.session.get("name")
         user_client = Client.objects.filter(username=user).first()
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
 
-                taocan_id = data['id']
+                taocan_id = data.get('combo_id')
 
                 taocan = Order_combo.objects.filter(id=taocan_id).first()
                 if taocan is None:
