@@ -45,8 +45,12 @@ def MessageResponse(num,msg=None,data=None):
 
             if num == 0:
                 if msg is None:
+                    if data is None:
+                        return JsonResponse({"status":num,"msg":code_msg_name.msg})
                     return JsonResponse({"status":num,"msg":code_msg_name.msg,"data":data})
                 else:
+                    if data is None:
+                        return JsonResponse({"status": num, "msg": msg})
                     return JsonResponse({"status":num,"msg":msg,"data":data})
             if msg is None:
                 return JsonResponse({"status":code_msg_name.code,"msg":code_msg_name.msg})
