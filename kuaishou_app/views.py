@@ -45,7 +45,7 @@ def ClickView(request):
         if works_link and need_gold and click_num and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
-        if len(client_id) != 4:
+        if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
@@ -104,7 +104,7 @@ def PlayView(request):
         if works_link and need_gold and play_num and project_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
-        if len(client_id) != 4:
+        if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
@@ -161,7 +161,7 @@ def FansView(request):
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
 
-        if len(client_id) != 4:
+        if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
@@ -232,7 +232,7 @@ def ConfirmView(request):
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
 
-        if len(client_id) != 4:
+        if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
