@@ -198,8 +198,6 @@ def taocanManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                print("********")
-                print(data)
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:
@@ -238,7 +236,6 @@ def showTaocan(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
-                print(data[::-1])
                 return JsonResponse({"data": data[::-1]})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
@@ -318,7 +315,6 @@ def login_houtai(request):
     """
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        print(data)
         user_name = data.get("user")
         password = data.get("pwd")
         # 认证用户

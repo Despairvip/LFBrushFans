@@ -269,6 +269,8 @@ def add_wechat(request):
         data = json.loads(request.body.decode())
         wechat_id = data.get("wechat_id")
         type = data.get("type")  # 判断是增加微信号还是删除微信号
+        if wechat_id and type is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         admin_set = AdminManagement.objects.filter(wechat=wechat_id)
         if type == 1:
             admin = admin_set.first()
@@ -285,7 +287,7 @@ def add_wechat(request):
             return JsonResponse(data={"status": 0, "msg": "添加成功"})
         elif type == 2:
             if admin_set.first() is None:
-                return JsonResponse(data={"status": 3103, "msg": "输入正确的号码"})
+                return JsonResponse(data={"status": 3103, "msg": "输入正确的信息"})
 
             try:
                 admin_set.delete()

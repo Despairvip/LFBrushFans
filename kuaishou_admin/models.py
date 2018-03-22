@@ -194,10 +194,10 @@ class Old_Order_project(models.Model):
 
 
 class AdminManagement(models.Model):
-    choice_delete = (
-        (0, "正常"),
-        (1, "删除")
-    )
+    # choice_delete = (
+    #     (0, "正常"),
+    #     (1, "删除")
+    # )
     wechat = models.CharField(max_length=100, default='', null=True)
 
     def __str__(self):
