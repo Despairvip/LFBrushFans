@@ -20,7 +20,7 @@ def save_taocan_detail(**kwargs):
     :param kwargs:
     :return:
     """
-    print(kwargs)
+
     taocan_name = kwargs.get("name")
     taocan_gold = kwargs.get("gold")
     taocan_detail = kwargs.get("detail")
