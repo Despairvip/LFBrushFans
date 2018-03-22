@@ -163,7 +163,8 @@ xialing
 def check_token(view_func):
     @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        token = json.loads(request.body.decode()).get("token")
+        data = json.loads(request.body.decode())
+        token = data.get("token")
         if not token:
             return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
         else:

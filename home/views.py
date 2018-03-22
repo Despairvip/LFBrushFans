@@ -121,7 +121,7 @@ def remenTaocan(request):
                     'project_id': detail.id,
                 })
             data.append(taocan_msg)
-            # 缓存到数据库
+
         return JsonResponse({"status": 0, "data": data})
 
 

@@ -91,9 +91,9 @@ class Order(models.Model):
         (0, "支付宝支付"),
         (1, "微信支付"),
     )
-    client = models.ForeignKey('Client')
-    project = models.ForeignKey('Project', blank=True, null=True, default='')
-    combo = models.ForeignKey('Order_combo', blank=True, null=True, default='')
+    client = models.ForeignKey('Client', on_delete=models.CASCADE)
+    project = models.ForeignKey('Project', blank=True, null=True, default='', on_delete=models.CASCADE)
+    combo = models.ForeignKey('Order_combo', blank=True, null=True, default='', on_delete=models.CASCADE)
 
     gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
     data = models.TextField(default="")
@@ -184,7 +184,7 @@ class Old_Order_project(models.Model):
     '''
     old_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))
 
-    orders = models.OneToOneField('Order', null=True)
+    orders = models.OneToOneField('Order', null=True, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -195,10 +195,11 @@ class Old_Order_project(models.Model):
 
 class AdminManagement(models.Model):
     choice_delete = (
-        (0,"正常"),
-        (1,"删除")
+        (0, "正常"),
+        (1, "删除")
     )
     wechat = models.CharField(max_length=100, default='', null=True)
+
     def __str__(self):
         return self.wecaht
 
