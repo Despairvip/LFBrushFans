@@ -317,8 +317,11 @@ def new_version_update(request):
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 2001, "msg": "查询错误"})
+    if int(version_code) < int(version_query.first().version):
+
+        return JsonResponse(data={"status" : 3103,"msg" : "版本号输入错误"})
     try:
-        version = version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
+        version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
 
     except Exception as e:
         logger.error(e)

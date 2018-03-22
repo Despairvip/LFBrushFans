@@ -589,11 +589,9 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
-    if version_code is None:
-        return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
-    if version_code is None:
-        return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
+    # if version_code is None:
+    #     return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
 
     try:
         # 获取最新版本号
@@ -604,17 +602,24 @@ def check_update(request):
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
+
+    sdk_url = version_set.sdk_url
+    update_msg = version_set.update_msg
+    content = {
+        "version":version,
+        "sdk_url": sdk_url,
+        "update_msg": update_msg
+    }
+
+    if version_code is None:
+        return JsonResponse(data={"status": 0, "data": content})
+
     if version is None:
         return JsonResponse(data={"status": 4002, "msg": "获取版本号失败"})
 
         # 进行对比
     if int(version) > version_code:
-        sdk_url = version_set.sdk_url
-        update_msg = version_set.update_msg
-        content = {
-            "sdk_url": sdk_url,
-            "update_msg": update_msg
-        }
+
         return JsonResponse(data={"status": 4203, "data": content})
 
     return JsonResponse(data={"status": 0})
