@@ -8,6 +8,7 @@ IDE:PyCharm
 
 import base64
 import json
+import logging
 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
@@ -15,11 +16,15 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import render
 
+
 # Create your views here.
 
 from backManage.libs_save_results import save_taocan_detail, update_taocan
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client
+
+
+logger = logging.getLogger("django_admin")
 
 
 @login_required
@@ -31,22 +36,30 @@ def proManage(request):
     '''
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
                 proName = data["name"]
                 proNum = data["num"]
                 gold = data["gold"]
-                proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
+                try:
+                    proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
+                except Exception as e:
+                    logger.error(e)
+                    return MessageResponse(2001)
                 if proj is not None:
-                    return JsonResponse({"status": 500, "msg": "this project exists"})
+                    return MessageResponse(2003)
                 if Project.objects.create(pro_name=proName, pro_gold=gold, count_project=proNum):
-                    return JsonResponse({'status': 0})
+                    return MessageResponse(0)
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 @login_required
@@ -57,8 +70,12 @@ def changeProManage(request):
     :return:
     """
     if request.method == "POST":
-        user = request.session["name"]
-        user_client = Client.objects.filter(username=user).first()
+        user = request.session.get("name")
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
@@ -67,20 +84,22 @@ def changeProManage(request):
                 num = data.get("num")
                 gold = data.get("gold")
 
-                project = Project.objects.filter(id=id).first()
+                try:
+                    project = Project.objects.filter(id=id).first()
+                except Exception as e:
+                    logger.error(e)
+                    return MessageResponse(2001)
                 if project is None:
-                    return JsonResponse({'status': 500, 'msg': 'your project is not exists'})
+                    return MessageResponse(2002)
                 project.pro_name = name
                 project.pro_gold = gold
                 project.count_project = num
                 project.save()
-                return JsonResponse({
-                    "status": 0
-                })
+                return MessageResponse(0)
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 @login_required
@@ -92,7 +111,11 @@ def ShowAll(request):
     """
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 projects = Project.objects.all()
@@ -168,21 +191,28 @@ def deleteProject(request):
     """
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
                 project_id = data.get("pro_id")
-
-                project = Project.objects.filter(id=project_id).first()
+                try:
+                    project = Project.objects.filter(id=project_id).first()
+                except Exception as e:
+                    logger.error(e)
+                    return MessageResponse(2002)
                 if project is None:
-                    return JsonResponse({'status': 500, 'msg': 'project not exists'})
+                    return MessageResponse(2002)
                 project.delete()
-                return JsonResponse({"status": 0})
+                return MessageResponse(0)
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 @login_required
@@ -194,32 +224,41 @@ def taocanManage(request):
     '''
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:
-                    return JsonResponse({"status": 0})
+                    return MessageResponse(0)
                 else:
-                    return JsonResponse({"status": 500, "msg": result["msg"]})
+                    return MessageResponse(4202,msg=result["msg"])
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 @login_required
 def showTaocan(request):
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 try:
                     taocans = Order_combo.objects.all().prefetch_related('project_detail')
-                except:
+                except Exception as e:
+                    logger.error(e)
                     return {"status":500,"msg":"查询失败"}
                 data = []
                 for taocan in taocans:
@@ -238,16 +277,20 @@ def showTaocan(request):
                     data.append(taocan_msg)
                 return JsonResponse({"data": data[::-1]})
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 @login_required
 def changeTaocan(request):
     if request.method == "POST":
         user = request.session.get("name")
-        user_client = Client.objects.filter(username=user).first()
+        try:
+            user_client = Client.objects.filter(username=user).first()
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
@@ -280,17 +323,20 @@ def deleteTaocan(request):
                 data = json.loads(request.body.decode())
 
                 taocan_id = data.get('combo_id')
-
-                taocan = Order_combo.objects.filter(id=taocan_id).first()
+                try:
+                    taocan = Order_combo.objects.filter(id=taocan_id).first()
+                except Exception as e:
+                    logger.error(e)
+                    return MessageResponse(2001)
                 if taocan is None:
-                    return JsonResponse({"status": 500, 'msg': 'taocan is not exsits'})
+                    return MessageResponse(2002,msg="套餐是空的")
                 taocan.project_detail.clear()
                 taocan.delete()
-                return JsonResponse({"status": 0})
+                return MessageResponse(0)
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
 
 
 
@@ -325,7 +371,3 @@ def index(request):
         return render(request, "kuaishou_admin/index.html")
 
 
-def test(request):
-    if request.method == "POST":
-        data = {"name": "zz"}
-        return MessageResponse(2001)

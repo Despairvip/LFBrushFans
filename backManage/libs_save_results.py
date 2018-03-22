@@ -49,6 +49,7 @@ def save_taocan_detail(**kwargs):
 
     if any(msg_status):
         taocan.save()
+
         return {"status": 0, 'msg': 'create data success'}
     else:
         taocan.delete()
