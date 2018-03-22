@@ -31,8 +31,8 @@ def Create_alipay_order():
     alipay = AliPay(
         appid=settings.ALIPAY_APPID,
         app_notify_url=None,  # 默认回调url
-        app_private_key_path=os.path.join(settings.BASE_DIR, "kuaishou_app/app_private_key.pem"),
-        alipay_public_key_path=os.path.join(settings.BASE_DIR, "kuaishou_app/alipay_public_key.pem"),
+        app_private_key_path=os.path.join(settings.BASE_DIR, "utils/app_private_key.pem"),
+        alipay_public_key_path=os.path.join(settings.BASE_DIR, "utils/alipay_public_key.pem"),
         # 支付宝的公钥，验证支付宝回传消息使用，不是你自己的公钥,
         sign_type="RSA2",  # RSA 或者 RSA2
         debug=True  # 默认False  配合沙箱模式使用
@@ -133,7 +133,6 @@ xialing and zhouzhou
 
 
 def conditions(client, need_gold, ):
-    print(need_gold)
     need_gold = int(need_gold)
 
     client_now_gold = client.gold

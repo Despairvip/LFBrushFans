@@ -20,7 +20,6 @@ from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
 
-
 down = gifshow()
 # 实例化一个加密对象
 q = Hashids()
@@ -39,16 +38,15 @@ def ClickView(request):
         need_gold = data.get('gold')
         client_id = data.get("user_id")
 
-
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
         token = data.get("token")
 
-        if not all([works_link, need_gold, click_num, project_id, client_id,client_id]):
+        if works_link and need_gold and click_num and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
         if len(client_id) != 4:
-            return JsonResponse(data={"status" : 2004})
+            return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
             if client is None:
@@ -103,12 +101,11 @@ def PlayView(request):
         kuaishou_id = data.get('hands_id')
 
         token = data.get("token")
-
-        if not all([works_link, need_gold, play_num, project_id,client_id]):
+        if works_link and need_gold and play_num and project_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
         if len(client_id) != 4:
-            return JsonResponse(data={"status" : 2004})
+            return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
             if not client:
@@ -160,12 +157,12 @@ def FansView(request):
         client_id = data.get("user_id")
         token = data.get("token")
 
-        if not all([hands_id, need_gold, fan_num, client_id,hands_id]):
+        if hands_id and need_gold and fan_num and client_id and hands_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
 
         if len(client_id) != 4:
-            return JsonResponse(data={"status" : 2004})
+            return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=wechat_id).first()
             if client is None:
@@ -231,12 +228,12 @@ def ConfirmView(request):
         kuaishou_id = data.get('hands_id')
         client_id = data.get("user_id")
         token = data.get("token")
-        if not all([package_id,need_gold,works_link,kuaishou_id,client_id]):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if package_id and need_gold and works_link and kuaishou_id and client_id is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
 
         if len(client_id) != 4:
-            return JsonResponse(data={"status" : 2004})
+            return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=user_id).first()
             if client is None:
@@ -287,8 +284,8 @@ def IntegralView(request):
         pay_type = data.get("pay_type")
         token = data.get("token")
 
-        if not all([order_id,gold,pay_type]):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if order_id and gold and pay_type is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
 
         try:
@@ -362,14 +359,14 @@ def PayApi(request):
         money = data.get("money")
         pay_type = data.get("pay_type")
 
-        if not all([user_id,money,pay_type]):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if user_id and money and pay_type is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
         user_id = handle_user_id(data.get('user_id'))
 
         order_id = create_num(user_id, 1)
         try:
-            if pay_type == '0':
+            if pay_type == 0:
                 ali_pay = create_alipay()
                 # App支付，将order_string返回给app即可
 
@@ -412,8 +409,8 @@ def CenterView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         client_id = data.get("user_id")
-        if not all(client_id):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if client_id is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
         user_id = handle_user_id(data.get('user_id'))
         try:
@@ -438,8 +435,8 @@ def DownloadView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works = data.get("works")
-        if not all(works):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if works is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
         # 提取photo_id
         try:
@@ -464,12 +461,12 @@ xialing
 def NotesView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        client_id =data.get('user_id')
+        client_id = data.get('user_id')
         page = data.get("page", 1)
         # 一页几条数据
         num_page = data.get("num_page", 10)
-        if not all(client_id):
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+        if client_id is None:
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(client_id)
 
         try:
@@ -513,7 +510,7 @@ def ClientLoginView(request):
 
         type = data.get('type')
         if type is None:
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
         elif type == '0':
             code = data['code']
@@ -562,8 +559,9 @@ def ClientLoginView(request):
             openid = data.get('openid')
             oauth_consumer_key = data.get('oauth_consumer_key')
             token = data.get("access_token")
-            res = requests.get('https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
-                token, oauth_consumer_key, openid)).json()
+            res = requests.get(
+                'https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
+                    token, oauth_consumer_key, openid)).json()
 
             avatar = res.get("figureurl_qq_1")
             nickname = res.get("nickname")
@@ -581,8 +579,7 @@ def ClientLoginView(request):
 
             return JsonResponse(data={"status": 0, 'data': content, "token": token})
         else:
-            return JsonResponse(data={"status" :3103,"msg" : "参数不全"})
-
+            return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
 
 """written by Despair"""
@@ -592,11 +589,9 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
-    if version_code is None:
-        return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
-    if version_code is None:
-        return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
+    # if version_code is None:
+    #     return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
 
     try:
         # 获取最新版本号
@@ -607,17 +602,24 @@ def check_update(request):
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
+
+    sdk_url = version_set.sdk_url
+    update_msg = version_set.update_msg
+    content = {
+        "version":version,
+        "sdk_url": sdk_url,
+        "update_msg": update_msg
+    }
+
+    if version_code is None:
+        return JsonResponse(data={"status": 0, "data": content})
+
     if version is None:
         return JsonResponse(data={"status": 4002, "msg": "获取版本号失败"})
 
         # 进行对比
     if int(version) > version_code:
-        sdk_url = version_set.sdk_url
-        update_msg = version_set.update_msg
-        content = {
-            "sdk_url":sdk_url,
-            "update_msg":update_msg
-        }
+
         return JsonResponse(data={"status": 4203, "data": content})
 
     return JsonResponse(data={"status": 0})
