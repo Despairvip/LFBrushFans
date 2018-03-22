@@ -265,13 +265,7 @@ def changeTaocan(request):
 
 
 
-def changeTaocanTest(request):
-    if request.method == "POST":
-        data = json.loads(request.body.decode())
-        print(data)
-        result = test_taocan(**data)
-        if result["status"] == 0:
-            return MessageResponse(0)
+
 
 
 
