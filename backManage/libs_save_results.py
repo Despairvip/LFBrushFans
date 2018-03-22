@@ -24,10 +24,16 @@ def save_taocan_detail(**kwargs):
     taocan_detail = kwargs.get("detail")
     if Order_combo.objects.filter(name=taocan_name).first():
         return {"status": 500, 'msg': 'already exists'}
-    taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
+    try:
+        taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
+    except:
+        return {"status":500,"msg":"创建套餐错误"}
+
     msg_status = []
     for msg in taocan_detail:
-
+        print(msg.get("proName"),msg.get("num"))
+        if msg.get("proName") is None or msg.get("num") is None:
+            return {"status":500,"msg":"不要创建空的好不好"}
         project = Combo_project.objects.get_or_create(pro_name=msg.get("proName"), count_project=msg.get("num"))
         taocan.project_detail.add(project[0].id)
         msg_status.append(project[1])
