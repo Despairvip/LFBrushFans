@@ -17,7 +17,7 @@ from django.shortcuts import render
 
 # Create your views here.
 
-from backManage.libs_save_results import save_taocan_detail, update_taocan, delete_pro_in_taocan
+from backManage.libs_save_results import save_taocan_detail, update_taocan
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client
 
@@ -255,13 +255,25 @@ def changeTaocan(request):
                 result = update_taocan(**data)
 
                 if result['status'] == 0:
-                    return JsonResponse({"status": 0})
+                    return MessageResponse(0)
                 else:
-                    return JsonResponse({"status": 500, "msg": result["msg"]})
+                    return MessageResponse(2001)
             else:
-                return JsonResponse({"status": 500, "msg": "you are not superuser"})
+                return MessageResponse(3105)
         else:
-            return JsonResponse({"status": 500, "msg": "usr is not exists"})
+            return MessageResponse(3104)
+
+
+
+def changeTaocanTest(request):
+    if request.method == "POST":
+        data = json.loads(request.body.decode())
+        print(data)
+        result = test_taocan(**data)
+        if result["status"] == 0:
+            return MessageResponse(0)
+
+
 
 
 @login_required
@@ -287,23 +299,7 @@ def deleteTaocan(request):
             return JsonResponse({"status": 500, "msg": "usr is not exists"})
 
 
-@login_required
-def delete_taocan_project(request):
-    """
-    移除套餐内的项目
-    :param request:
-    :return:
-    """
-    if request.method == "POST":
 
-        data = json.loads(request.body.decode())
-
-        result = delete_pro_in_taocan(**data)
-
-        if result["status"] == 0:
-            return JsonResponse({"status": 0})
-        else:
-            return JsonResponse({"status": result["status"], "msg": result["msg"]})
 
 
 def login_houtai(request):
