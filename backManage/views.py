@@ -396,6 +396,7 @@ def set_gold_money(request):
                             logger.error(e)
                             return MessageResponse(2001)
 
+
                         if moneyAndGold[1] is False:
                             return MessageResponse(2003)
                         else:
