@@ -44,9 +44,9 @@ def proManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                proName = data["name"]
-                proNum = data["num"]
-                gold = data["gold"]
+                proName = data.get("name")
+                proNum = data.get("project_num")
+                gold = data.get("gold")
                 try:
                     proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
                 except Exception as e:
@@ -232,6 +232,7 @@ def taocanManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
+                print(data)
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:

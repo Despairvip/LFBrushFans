@@ -3,7 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from hashids import Hashids
-from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion
+from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, Project
 import json
 from django.core.paginator import Paginator
 
@@ -318,8 +318,7 @@ def new_version_update(request):
         logger.error(e)
         return JsonResponse(data={"status": 2001, "msg": "查询错误"})
     if int(version_code) < int(version_query.first().version):
-
-        return JsonResponse(data={"status" : 3103,"msg" : "版本号输入错误"})
+        return JsonResponse(data={"status": 3103, "msg": "版本号输入错误"})
     try:
         version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
 
@@ -328,3 +327,18 @@ def new_version_update(request):
         return JsonResponse(data={"status": 3107, "msg": "修改失败"})
 
     return JsonResponse(data={"status": 0})
+
+
+"所有项目"
+
+
+def all_project(request):
+    names = Project.objects.values("pro_name").all()
+    content = set()
+    for pro_name in names:
+        name = pro_name.get('pro_name')
+        content.add(name)
+    result = []
+    for a in content:
+        result.append(a)
+    return JsonResponse(data={"status": 0, "data": result})

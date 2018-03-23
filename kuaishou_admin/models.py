@@ -49,16 +49,9 @@ class Project(models.Model):
     '''
     项目表
     '''
-    choice_pro_type = (
-        (1, "刷粉丝"),
-        (2, "刷双击"),
-        (3, "刷播放"),
-
-    )
     pro_name = models.CharField(max_length=100, blank=False)
     count_project = models.IntegerField(default=0)
     pro_gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'), null=True)
-    pro_type = models.IntegerField(default=1, choices=choice_pro_type)
 
     def to_dict(self):
         data = {
@@ -130,7 +123,7 @@ class Order(models.Model):
             "work_links": self.link_works,
             "status_order": fettle,
 
-            "user_name": self.client.name,
+            "user_name": self.client.username,
             "create_order_time": self.create_date
         }
         return order_dict
