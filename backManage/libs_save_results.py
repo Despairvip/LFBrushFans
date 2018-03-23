@@ -9,7 +9,7 @@ import logging
 
 from django.http import JsonResponse
 
-from kuaishou_admin.models import  Order_combo, Combo_project
+from kuaishou_admin.models import Order_combo, Combo_project, Client
 
 logger = logging.getLogger("django_admin")
 
@@ -100,7 +100,19 @@ def update_taocan(**kwargs):
 
 
 
-
+# def auth_super(func):
+#     def func(request,*args,**kwargs):
+#         user = request.session.get("name")
+#         user_client = Client.objects.filter(username=user).first()
+#         if user_client is not None:
+#             if user_client.is_superuser:
+#                 return func(request,*args,**args)
+#
+#
+#
+#
+#
+#     return func
 
 
 

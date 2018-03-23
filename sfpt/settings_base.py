@@ -87,6 +87,12 @@ LOGGING = {
             'filename':os.path.join(BASE_DIR,'utils/log/admin_log.log').replace('\\','/'),
             'formatter':'standard',
         },
+        'backManagerHandler': {
+            'level':'INFO',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename':os.path.join(BASE_DIR,'utils/log/backManager.log').replace('\\','/'),
+            'formatter':'standard',
+        },
     },
     'loggers': {
         'django.request': {
@@ -100,8 +106,13 @@ LOGGING = {
             'propagate': False
         },
         'django_admin':{
-            'handlers': ['test2_handler'],
+            'handlers': ['test2_handler','backManagerHandler'],
             'level': 'INFO',
+            'propagate': False
+        },
+        'djangoBackManager':{
+            'handers':['backManagerHandler'],
+            'level':'INFO',
             'propagate': False
         }
     }

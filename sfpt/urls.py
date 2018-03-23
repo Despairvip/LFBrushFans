@@ -39,4 +39,7 @@ urlpatterns = [
     url(r'^login_admin',views.login_houtai),
     url(r'^index',views.index),
     url(r'^showAll',views.ShowAll),
+    url(r'^showGold',views.show_gold_money),
+    url(r'^setGold',views.set_gold_money),
+    url(r'^delGold',views.del_gold_money),
 ]

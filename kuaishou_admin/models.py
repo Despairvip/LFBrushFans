@@ -217,3 +217,12 @@ class CheckVersion(models.Model):
 
     class Meta:
         db_table = "version_num"
+
+
+class MoneyAndGold(models.Model):
+    """
+    设置金钱和积分的对应关系表
+    """
+    gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))#积分
+    money = models.DecimalField("金钱", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))#金钱
+

@@ -21,8 +21,7 @@ from django.shortcuts import render
 
 from backManage.libs_save_results import save_taocan_detail, update_taocan
 from common.returnMessage import MessageResponse
-from kuaishou_admin.models import Order_combo, Project, Client
-
+from kuaishou_admin.models import Order_combo, Project, Client, MoneyAndGold
 
 logger = logging.getLogger("django_admin")
 
@@ -369,5 +368,121 @@ def login_houtai(request):
 def index(request):
     if request.method == "GET":
         return render(request, "kuaishou_admin/index.html")
+
+
+
+@login_required
+def set_gold_money(request):
+    '''
+    设置积分和钱的配比
+    :param request:
+    :return:
+    '''
+    if request.method == "POST":
+        user = request.session.get("name")
+        user_client = Client.objects.filter(username=user).first()
+        if user_client is not None:
+            if user_client.is_superuser:
+                data = json.loads(request.body.decode())
+                money = data.get("money")
+
+                gold = data.get("gold")
+                try:
+                    if isinstance(money,int) and isinstance(gold,int):
+                        try:
+                            moneyAndGold = MoneyAndGold.objects.get_or_create(money=money,gold=gold)
+                        except Exception as e:
+                            logger.error(e)
+                            return MessageResponse(2001)
+
+                        if moneyAndGold[1] is False:
+                            return MessageResponse(2003)
+                        else:
+                            data_list = []
+                            data_dict = {}
+                            print(moneyAndGold[0].id)
+                            data_dict["money"] = moneyAndGold[0].money
+                            data_dict["gold"] = moneyAndGold[0].gold
+                            data_dict["id"] = moneyAndGold[0].id
+                            data_list.append(data_dict)
+                            return MessageResponse(0,data=data_list)
+                    else:
+                        return MessageResponse(2002)
+                except Exception as e:
+                    logger.error(e)
+                    return MessageResponse(2001)
+            else:
+                return MessageResponse(3105)
+        else:
+            return MessageResponse(3104)
+
+
+
+def show_gold_money(request):
+    """
+    传递金钱和积分给前端
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        try:
+            moneyAndGold = MoneyAndGold.objects.order_by("money")
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
+        else:
+
+            data = []
+            for detial in moneyAndGold:
+                data_dict = {}
+                print(detial.id)
+                data_dict["money"] = detial.money
+                data_dict["gold"] = detial.gold
+                data_dict["id"] = detial.id
+                data.append(data_dict)
+
+            return MessageResponse(0,data=data)
+
+@login_required
+def del_gold_money(request):
+    """
+    删除金钱和积分
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        user = request.session.get("name")
+        user_client = Client.objects.filter(username=user).first()
+        if user_client is not None:
+            if user_client.is_superuser:
+                data = json.loads(request.body.decode())
+                id = data.get("id")
+                if isinstance(id,int):
+                    try:
+                        moneyAndGold = MoneyAndGold.objects.filter(id=id).first()
+                    except Exception as e:
+                        logger.error(e)
+                        return MessageResponse(2001)
+                    if moneyAndGold is None:
+                        return MessageResponse(2002)
+                    else:
+                        moneyAndGold.delete()
+                        return MessageResponse(0)
+            else:
+                return MessageResponse(3105)
+        else:
+            return MessageResponse(3104)
+
+
+
+
+
+
+
+
+
+
+
+
 
 

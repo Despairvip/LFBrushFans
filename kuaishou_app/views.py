@@ -7,13 +7,14 @@ import redis
 import requests
 from django.http import HttpResponseRedirect
 
+from common.returnMessage import MessageResponse
 from sfpt import settings
 
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from hashids import Hashids
 
-from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement
+from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement, MoneyAndGold
 from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
@@ -27,6 +28,34 @@ q = Hashids()
 logger = logging.getLogger("django_app")
 
 conn = redis.Redis()
+
+
+@check_token
+def show_gold_money(request):
+    """
+    传递金钱和积分给前端
+    :param request:
+    :return:
+    """
+    if request.method == "POST":
+        try:
+            moneyAndGold = MoneyAndGold.objects.order_by("money")
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
+        else:
+
+            data = []
+            for detial in moneyAndGold:
+                data_dict = {}
+                print(detial.id)
+                data_dict["money"] = detial.money
+                data_dict["gold"] = detial.gold
+
+                data.append(data_dict)
+
+            return MessageResponse(0,data=data)
+
 
 
 @check_token
@@ -457,6 +486,8 @@ xialing
 '''
 
 
+
+
 @check_token
 def NotesView(request):
     if request.method == "POST":
@@ -652,3 +683,7 @@ def shield_wechat(request):
      屏蔽微信登陸
      '''
     return JsonResponse(data={"data": False})
+
+
+
+
