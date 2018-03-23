@@ -56,5 +56,4 @@ def MessageResponse(num,msg=None,data=None):
                 return JsonResponse({"status":code_msg_name.code,"msg":code_msg_name.msg})
             else:
                 return JsonResponse({"status":num,"msg":msg})
-        else:
-            return JsonResponse({"msg":"%s不存在"%num})
+
