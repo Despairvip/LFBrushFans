@@ -20,9 +20,8 @@ DATABASES = {
     },
 }
 
-STATIC_URL = 'http://ksht-static.3agzs.com/'
-STATIC_ROOT = os.path.join(BASE_DIR,'/static/').replace('\\','/')
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, '/static/').replace('\\', '/')
 STATICFILES_DIRS = (
     os.path.join(BASE_DIR, "static"),
 )
-
