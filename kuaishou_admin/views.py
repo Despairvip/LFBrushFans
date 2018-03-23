@@ -128,20 +128,36 @@ def EnterSearchView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         if "kuaishou_id" in data:
-            kuaishou_id = data['kuaishou_id']
+            kuaishou_id = data.get('kuaishou_id')
+            print(kuaishou_id)
             orders = Order.objects.filter(kuaishou_id=kuaishou_id).all()
         else:
-            hs_order_id = data["order_id"]
+            message = []
+            hs_order_id = data.get("order_id")
             order_id = encrypt.decode(hs_order_id)[0]
 
-            orders = Order.objects.filter(order_id_num=order_id).all()
+            order = Order.objects.get(order_id_num=order_id)
+            content = order.to_dict()
+            order_id = content['order_id']
+            if order.project is None:
+                content["project_name"] = order.combo.name
+            else:
+                content["project_name"] = order.project.pro_name
+            hs_order_id = encrypt.encode(int(order_id))
+            content['order_id'] = hs_order_id
+
+            message.append(content)
+            return JsonResponse(data={'msg': message})
 
         message = []
         if orders:
             for order in orders:
                 content = order.to_dict()
                 order_id = content['order_id']
-                content["project_name"] = order.project.pro_name
+                if order.project is None:
+                    content["project_name"] = order.combo.name
+                else:
+                    content["project_name"] = order.project.pro_name
                 hs_order_id = encrypt.encode(int(order_id))
                 content['order_id'] = hs_order_id
 
@@ -171,15 +187,18 @@ def UserSearchView(request):
             if user_id < 0:
                 return JsonResponse
 
-            users = Client.objects.filter(id=user_id).all()
+            users = Client.objects.get(id=user_id)
         else:
-            users = Client.objects.filter(name=data.get("user_name")).all()
+            user_name = data.get("user_name")
+            users = Client.objects.get(username=user_name)
+
 
         if users:
-            for user in users:
-                content = user.to_dict()
-                result.append(content)
-
+            print(users)
+            content = users.to_dict()
+            result.append(content)
+        else:
+            return JsonResponse(data={"status" : 3103,"msg" : "输入有误"})
         return JsonResponse(data={"msg": result})
 
 
@@ -226,6 +245,7 @@ def ModifyGoldView(request):
         try:
             user = Client.objects.filter(id=user_id).update(gold=gold_num)
         except Exception as e:
+            logger.error(e)
             return JsonResponse(data={"msg": "查不到用户"})
         if not user:
             return JsonResponse(data={'msg': False})
