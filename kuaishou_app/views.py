@@ -251,7 +251,9 @@ def FansView(request):
 def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
+        print(data)
         package_id = data.get('package_id')
+        print(package_id)
         need_gold = data.get('gold')
         works_link = data.get('works')
         kuaishou_id = data.get('hands_id')
@@ -279,10 +281,10 @@ def ConfirmView(request):
         order_id = create_num(user_id, 100)
         hs_order_id = q.encode(int(order_id))
         # ------------订单处理--------------------
-        if package_id in [1, 2, 3, 4, 5, 6]:
-            order_combo = Order_combo.objects.filter(id=package_id).first()
 
-            msg = {
+        order_combo = Order_combo.objects.filter(id=package_id).first()
+
+        msg = {
                 "status_order": "未开始",
                 "ordered_num": '',
                 "user_name": client_id,
@@ -292,15 +294,14 @@ def ConfirmView(request):
                 "kuaishou_id": kuaishou_id,
                 "create_order_time": socket_create_order_time(),
             }
-            msg_json = json.dumps(msg)
-            obj = RedisHelper()
-            obj.public(msg_json)
-            order = Order(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
-                          link_works=works_link, count_init=0, type_id=1)
+        msg_json = json.dumps(msg)
+        obj = RedisHelper()
+        obj.public(msg_json)
+        order = Order(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
+                          link_works=works_link, order_id_num=order_id,count_init=0, type_id=1)
 
-            order.save()
-        else:
-            return JsonResponse({'status': 4003, 'msg': '套餐不存在'})
+        order.save()
+
         return JsonResponse({'status': 0, 'order_num': hs_order_id})
 
 

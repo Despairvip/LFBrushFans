@@ -14,5 +14,6 @@ urlpatterns = [
     url(r'^users$', views.UserListView, name="usersearch"),  # 用户列表
     url(r'^add$', views.add_wechat),  # 添加客服微信号
     url(r'^update$', views.new_version_update),  # 用户版本更新
+    url(r'^all$', views.all_project),  # 用户版本更新
 
 ]

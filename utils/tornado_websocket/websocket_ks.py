@@ -13,8 +13,10 @@ import os,django
 import re
 from django.template import base
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "Demo.settings")# project_name 项目名称
-django.setup()
+from lib_redis import RedisHelper
+#
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE","sfpt/sfpt.settings")# project_name 项目名称
+# django.setup()
 
 
 import json
@@ -24,31 +26,14 @@ import tornado.httpserver
 import tornado.ioloop
 import tornado.web
 import tornado.websocket
-from lib_redis import RedisHelper
-from django.contrib.sessions.models import Session
+
+# from django.contrib.sessions.models import Session
 
 
-super_user = ["xxxx"]
-Tag = "_auth_user_id"
-
-class TestHandler(tornado.web.RequestHandler):
-    def get(self):
-        sessionid = self.get_cookie("sessionid")
-        print(sessionid)
-        session_key = Session.objects.filter(session_key=sessionid).first()
-        session_msg = session_key.session_data
-        user_msg = base64.b64decode(session_msg).decode()
-        print(user_msg)
-        # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
-        # print(session_msg)
-        for i in super_user:
-            if i in user_msg:
-                print("true")
+super_user = ["admin"]
+# Tag = "_auth_user_id"
 
 
-        # name = self.get_cookie("user_name")
-        # print(name)
-        self.write("success")
 
 
 
@@ -135,14 +120,14 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         # 赋值订阅变量
         redis_sub = obj.subscribe()
+        #
+        # sessionid = self.get_cookie("sessionid")
+        # print(sessionid)
+        # session_key = Session.objects.filter(session_key=sessionid).first()
+        # session_msg = session_key.session_data
+        # user_msg = base64.b64decode(session_msg).decode()
 
-        sessionid = self.get_cookie("sessionid")
-        print(sessionid)
-        session_key = Session.objects.filter(session_key=sessionid).first()
-        session_msg = session_key.session_data
-        user_msg = base64.b64decode(session_msg).decode()
-
-        print(user_msg)
+        # print(user_msg)
         # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
         # print(session_msg)
         # for i in super_user:
@@ -151,7 +136,7 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         if obj_msg['action'] == "start":
             for i in super_user:
-                if Tag in user_msg:
+                if "admin" in i:
             # 循环执行如下命令
                     while True:
                         # 二次调用parse_response() 开始接收
@@ -173,7 +158,7 @@ class Application(tornado.web.Application):
     def __init__(self):
         handlers = [
             (r'/ws', WebSocketHandler),
-            (r'/test', TestHandler)
+
         ]
 
         tornado.web.Application.__init__(self, handlers)

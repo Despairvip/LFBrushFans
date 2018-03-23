@@ -89,7 +89,7 @@ def home(request):
 @csrf_exempt
 def shuangji_page(request):
     try:
-        clicks = Project.objects.filter(pro_type=2).all()
+        clicks = Project.objects.filter(pro_name="刷双击").all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
@@ -109,7 +109,7 @@ def remenTaocan(request):
         data = []
         for taocan in taocans:
             taocan_msg = {}
-            taocan_msg['id'] = taocan.id
+            taocan_msg['package_id'] = taocan.id
             taocan_msg['name'] = taocan.name
             taocan_msg['gold'] = taocan.pro_gold
 
@@ -128,7 +128,7 @@ def remenTaocan(request):
 @csrf_exempt
 def shuafenshi(request):
     try:
-        fans = Project.objects.filter(pro_type=1).all()
+        fans = Project.objects.filter(pro_name='刷粉丝').all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
@@ -143,7 +143,7 @@ def shuafenshi(request):
 @csrf_exempt
 def play_home_page(request):
     try:
-        fans = Project.objects.filter(pro_type=3).all()
+        fans = Project.objects.filter(pro_name='刷播放').all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
