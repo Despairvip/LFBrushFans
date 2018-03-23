@@ -133,10 +133,11 @@ def shuafenshi(request):
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
+
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
-
+    print(content)
     return JsonResponse(data={"status": 0, "data": content})
 
 
@@ -151,5 +152,5 @@ def play_home_page(request):
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
-
+    print(content)
     return JsonResponse(data={"status": 0, "data": content})
