@@ -7,9 +7,10 @@ from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, 
 import json
 from django.core.paginator import Paginator
 
-# Create your views here.
-from utils.views import login_admin_required_json
 
+# Create your views here.
+from utils.views import login_admin_required_json, handle_user_id, expired_message
+expired_message()
 encrypt = Hashids()
 logger = logging.getLogger("django_admin")
 '''登陆'''
@@ -129,7 +130,7 @@ def EnterSearchView(request):
         data = json.loads(request.body.decode())
         if "kuaishou_id" in data:
             kuaishou_id = data.get('kuaishou_id')
-            print(kuaishou_id)
+
             orders = Order.objects.filter(kuaishou_id=kuaishou_id).all()
         else:
             message = []
@@ -194,7 +195,6 @@ def UserSearchView(request):
 
 
         if users:
-            print(users)
             content = users.to_dict()
             result.append(content)
         else:
@@ -240,8 +240,8 @@ def ModifyGoldView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
-        user_id = data["user_id"]
-        gold_num = data["gold_num"]
+        user_id = handle_user_id(data.get("user_id"))
+        gold_num = data.get("gold_num")
         try:
             user = Client.objects.filter(id=user_id).update(gold=gold_num)
         except Exception as e:

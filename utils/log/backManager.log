@@ -4,3 +4,5 @@ ERROR 2018-03-23 07:36:05,235 'tuple' object has no attribute 'id'
 ERROR 2018-03-23 07:36:13,640 'tuple' object has no attribute 'id'
 ERROR 2018-03-23 07:37:31,257 'tuple' object has no attribute 'id'
 ERROR 2018-03-23 07:38:47,983 'tuple' object has no attribute 'id'
+ERROR 2018-03-23 09:12:38,254 (1264, "Out of range value for column 'gold' at row 1")
+ERROR 2018-03-23 09:15:58,406 (1048, "Column 'pro_name' cannot be null")

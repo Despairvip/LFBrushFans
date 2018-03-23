@@ -20,7 +20,7 @@ from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
     socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
-
+expired_message()
 down = gifshow()
 # 实例化一个加密对象
 q = Hashids()
@@ -28,7 +28,6 @@ q = Hashids()
 logger = logging.getLogger("django_app")
 
 conn = redis.Redis()
-
 
 @check_token
 def show_gold_money(request):
@@ -48,7 +47,7 @@ def show_gold_money(request):
             data = []
             for detial in moneyAndGold:
                 data_dict = {}
-                print(detial.id)
+
                 data_dict["money"] = detial.money
                 data_dict["gold"] = detial.gold
 
@@ -251,9 +250,7 @@ def FansView(request):
 def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-        print(data)
         package_id = data.get('package_id')
-        print(package_id)
         need_gold = data.get('gold')
         works_link = data.get('works')
         kuaishou_id = data.get('hands_id')
