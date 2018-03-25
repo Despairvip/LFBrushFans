@@ -390,27 +390,25 @@ def set_gold_money(request):
 
                 gold = data.get("gold")
                 try:
-                    if isinstance(money,int) and isinstance(gold,int):
-                        try:
-                            moneyAndGold = MoneyAndGold.objects.get_or_create(money=money,gold=gold)
-                        except Exception as e:
-                            logger.error(e)
-                            return MessageResponse(2001)
 
+                    try:
+                        moneyAndGold = MoneyAndGold.objects.get_or_create(money=money,gold=gold)
+                    except Exception as e:
+                        logger.error(e)
+                        return MessageResponse(2001)
 
-                        if moneyAndGold[1] is False:
-                            return MessageResponse(2003)
-                        else:
-                            data_list = []
-                            data_dict = {}
-
-                            data_dict["money"] = moneyAndGold[0].money
-                            data_dict["gold"] = moneyAndGold[0].gold
-                            data_dict["id"] = moneyAndGold[0].id
-                            data_list.append(data_dict)
-                            return MessageResponse(0,data=data_list)
+                    if moneyAndGold[1] is False:
+                        return MessageResponse(2003)
                     else:
-                        return MessageResponse(2002)
+                        data_list = []
+                        data_dict = {}
+
+                        data_dict["money"] = moneyAndGold[0].money
+                        data_dict["gold"] = moneyAndGold[0].gold
+                        data_dict["id"] = moneyAndGold[0].id
+                        data_list.append(data_dict)
+                        return MessageResponse(0, data=data_list)
+
                 except Exception as e:
                     logger.error(e)
                     return MessageResponse(2001)
