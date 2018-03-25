@@ -76,8 +76,6 @@ def expired_message():
         timeArray = time.strptime(new_time, "%Y-%m-%d %H:%M:%S")
         # 转换成时间戳
         timestamp = time.mktime(timeArray)
-        print(timestamp)
-        print(timeArray)
         if now_time - 86400 > timestamp:
             order.status = 2
             order.save()

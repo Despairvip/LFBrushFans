@@ -333,14 +333,21 @@ def new_version_update(request):
     update_msg = data.get("update_msg")
 
     try:
-        version_query = CheckVersion.objects
+        version_query = CheckVersion.objects.first()
+        if version_query is None :
+            version = CheckVersion()
+            version.version = version_code
+            version.sdk_url = sdk_url
+            version.upupdate_msg = update_msg
+            version.save()
+            return JsonResponse(data={"status": 0, "msg": "添加成功"})
+
     except Exception as e:
+
         logger.error(e)
-        return JsonResponse(data={"status": 2001, "msg": "查询错误"})
-    if int(version_code) < int(version_query.first().version):
-        return JsonResponse(data={"status": 3103, "msg": "版本号输入错误"})
+        return JsonResponse(data={"status" : 2103,"msg" : "输入错误"})
     try:
-        version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
+        CheckVersion.objects.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
 
     except Exception as e:
         logger.error(e)
