@@ -46,6 +46,7 @@ def proManage(request):
                 proName = data.get("name")
                 proNum = data.get("project_num")
                 gold = data.get("gold")
+
                 try:
                     proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
                 except Exception as e:
@@ -119,7 +120,7 @@ def ShowAll(request):
             if user_client.is_superuser:
                 projects = Project.objects.all()
                 data = []
-                # print(request.session["name"])
+
                 for project in projects:
                     pro_msg = {}
                     pro_msg["detail"] = {}
@@ -402,7 +403,7 @@ def set_gold_money(request):
                         else:
                             data_list = []
                             data_dict = {}
-                            print(moneyAndGold[0].id)
+
                             data_dict["money"] = moneyAndGold[0].money
                             data_dict["gold"] = moneyAndGold[0].gold
                             data_dict["id"] = moneyAndGold[0].id
@@ -437,7 +438,7 @@ def show_gold_money(request):
             data = []
             for detial in moneyAndGold:
                 data_dict = {}
-                print(detial.id)
+
                 data_dict["money"] = detial.money
                 data_dict["gold"] = detial.gold
                 data_dict["id"] = detial.id
