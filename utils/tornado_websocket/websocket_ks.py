@@ -39,7 +39,7 @@ super_user = ["admin"]
 
 
 
-
+#TODO 需要验证身份才能使用
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     executor = ThreadPoolExecutor(10)
 
