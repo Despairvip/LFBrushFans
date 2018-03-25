@@ -165,9 +165,16 @@ class Application(tornado.web.Application):
 
 
 if __name__ == '__main__':
+    import optparse
+
+    parser = optparse.OptionParser()
+    parser.add_option("-p", "--port", dest="port", action="store", type="int", default="8081")
+    (options, args) = parser.parse_args()
+
+
     ws_app = Application()
     server = tornado.httpserver.HTTPServer(ws_app)
-    server.listen(8081)
+    server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
 
 
