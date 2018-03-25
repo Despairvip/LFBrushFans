@@ -7,9 +7,10 @@ from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, 
 import json
 from django.core.paginator import Paginator
 
-# Create your views here.
-from utils.views import login_admin_required_json
 
+# Create your views here.
+from utils.views import login_admin_required_json, handle_user_id, expired_message
+expired_message()
 encrypt = Hashids()
 logger = logging.getLogger("django_admin")
 '''登陆'''
@@ -129,7 +130,7 @@ def EnterSearchView(request):
         data = json.loads(request.body.decode())
         if "kuaishou_id" in data:
             kuaishou_id = data.get('kuaishou_id')
-            print(kuaishou_id)
+
             orders = Order.objects.filter(kuaishou_id=kuaishou_id).all()
         else:
             message = []
@@ -194,7 +195,6 @@ def UserSearchView(request):
 
 
         if users:
-            print(users)
             content = users.to_dict()
             result.append(content)
         else:
@@ -240,8 +240,8 @@ def ModifyGoldView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
-        user_id = data["user_id"]
-        gold_num = data["gold_num"]
+        user_id = handle_user_id(data.get("user_id"))
+        gold_num = data.get("gold_num")
         try:
             user = Client.objects.filter(id=user_id).update(gold=gold_num)
         except Exception as e:
@@ -333,14 +333,21 @@ def new_version_update(request):
     update_msg = data.get("update_msg")
 
     try:
-        version_query = CheckVersion.objects
+        version_query = CheckVersion.objects.first()
+        if version_query is None :
+            version = CheckVersion()
+            version.version = version_code
+            version.sdk_url = sdk_url
+            version.upupdate_msg = update_msg
+            version.save()
+            return JsonResponse(data={"status": 0, "msg": "添加成功"})
+
     except Exception as e:
+
         logger.error(e)
-        return JsonResponse(data={"status": 2001, "msg": "查询错误"})
-    if int(version_code) < int(version_query.first().version):
-        return JsonResponse(data={"status": 3103, "msg": "版本号输入错误"})
+        return JsonResponse(data={"status" : 2103,"msg" : "输入错误"})
     try:
-        version_query.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
+        CheckVersion.objects.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
 
     except Exception as e:
         logger.error(e)

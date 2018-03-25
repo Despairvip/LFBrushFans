@@ -5,8 +5,11 @@ from django.http import JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
 
+from utils.views import expired_message
+
 logger = logging.getLogger("django_app")
 from kuaishou_admin.models import Project, Order_combo, Client, AdminManagement
+expired_message()
 
 
 @csrf_exempt
@@ -137,7 +140,7 @@ def shuafenshi(request):
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
-    print(content)
+
     return JsonResponse(data={"status": 0, "data": content})
 
 
@@ -152,5 +155,5 @@ def play_home_page(request):
     if fans:
         for fan in fans:
             content.append(fan.to_dict())
-    print(content)
+
     return JsonResponse(data={"status": 0, "data": content})
