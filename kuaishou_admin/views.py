@@ -369,3 +369,5 @@ def all_project(request):
     for a in content:
         result.append(a)
     return JsonResponse(data={"status": 0, "data": result})
+
+
