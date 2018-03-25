@@ -499,7 +499,7 @@ def NotesView(request):
         user_id = handle_user_id(client_id)
 
         try:
-            orders = Order.objects.filter(client__id__exact=user_id).all()
+            orders = Order.objects.filter(client__id__exact=user_id).all().order_by("-create_date")
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, 'msg': print(e)})
