@@ -5,6 +5,7 @@ from django.http import JsonResponse
 # Create your views here.
 from django.views.decorators.csrf import csrf_exempt
 
+from common.returnMessage import MessageResponse
 from utils.views import expired_message
 
 logger = logging.getLogger("django_app")
@@ -92,7 +93,7 @@ def home(request):
 @csrf_exempt
 def shuangji_page(request):
     try:
-        clicks = Project.objects.filter(pro_name="刷双击").all()
+        clicks = Project.objects.filter(pro_name="双击").all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
@@ -107,7 +108,11 @@ def shuangji_page(request):
 @csrf_exempt
 def remenTaocan(request):
     if request.method == "GET":
-        taocans = Order_combo.objects.all().prefetch_related('project_detail')
+        try:
+            taocans = Order_combo.objects.all().prefetch_related('project_detail')
+        except Exception as e:
+            logger.error(e)
+            return MessageResponse(2001)
 
         data = []
         for taocan in taocans:
@@ -123,6 +128,7 @@ def remenTaocan(request):
                     'project_num': detail.count_project,
                     'project_id': detail.id,
                 })
+
             data.append(taocan_msg)
 
         return JsonResponse({"status": 0, "data": data})
@@ -131,7 +137,7 @@ def remenTaocan(request):
 @csrf_exempt
 def shuafenshi(request):
     try:
-        fans = Project.objects.filter(pro_name='刷粉丝').all()
+        fans = Project.objects.filter(pro_name='粉丝').all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
@@ -147,7 +153,7 @@ def shuafenshi(request):
 @csrf_exempt
 def play_home_page(request):
     try:
-        fans = Project.objects.filter(pro_name='刷播放').all()
+        fans = Project.objects.filter(pro_name='播放').all()
     except Exception as e:
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})

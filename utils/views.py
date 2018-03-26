@@ -63,22 +63,23 @@ def Create_wechatpay_order():
 xialing
 """
 
-
 def expired_message():
     try:
         orders = Order.objects.filter(status=1).all()
+
+        now_time = time.time()
+        for order in orders:
+            c_time = str(order.create_date)
+            new_time = c_time.split('.')[0]
+            timeArray = time.strptime(new_time, "%Y-%m-%d %H:%M:%S")
+            # 转换成时间戳
+            timestamp = time.mktime(timeArray)
+            if now_time - 86400 > timestamp:
+                order.status = 2
+                order.save()
     except Exception as e:
         return
-    now_time = time.time()
-    for order in orders:
-        c_time = str(order.create_date)
-        new_time = c_time.split('.')[0]
-        timeArray = time.strptime(new_time, "%Y-%m-%d %H:%M:%S")
-        # 转换成时间戳
-        timestamp = time.mktime(timeArray)
-        if now_time - 86400 > timestamp:
-            order.status = 2
-            order.save()
+
 
 
 """

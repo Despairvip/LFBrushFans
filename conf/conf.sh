@@ -51,6 +51,7 @@ start() {
 
 
     supervisorctl restart sfpt
+    supervisorctl restart sfpt-realtimeorder
 
 
 #    nohup uwsgi --ini /home/ksht/uwsgi.ini
