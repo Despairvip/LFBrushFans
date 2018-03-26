@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import re
+from distutils.version import LooseVersion
 
 import redis
 import requests
@@ -18,7 +19,7 @@ from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVers
 from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
-    socket_create_order_time, handle_user_id, Create_wechatpay_order as create_wechat, \
+    socket_create_order_time, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
 expired_message()
 down = gifshow()
@@ -72,11 +73,10 @@ def ClickView(request):
 
         if works_link and need_gold and click_num and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        wechat_id = handle_user_id(data.get('user_id'))
         if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
-            client = Client.objects.filter(id=wechat_id).first()
+            client = Client.objects.filter(id=client_id).first()
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
@@ -94,7 +94,7 @@ def ClickView(request):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
         # ----------------订单操作---------------
-        order_id = create_num(wechat_id, project_id)
+        order_id = create_num(client_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
         msg = {
             "status_order": "未开始",
@@ -131,11 +131,10 @@ def PlayView(request):
         token = data.get("token")
         if works_link and need_gold and play_num and project_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        user_id = handle_user_id(data.get('user_id'))
         if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
-            client = Client.objects.filter(id=user_id).first()
+            client = Client.objects.filter(id=client_id).first()
             if not client:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
@@ -151,7 +150,7 @@ def PlayView(request):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
         # -----------订单处理-------------------
-        order_id = create_num(user_id, project_id)
+        order_id = create_num(client_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
         msg = {
             "status_order": "未开始",
@@ -187,12 +186,11 @@ def FansView(request):
 
         if hands_id and need_gold and fan_num and client_id and hands_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        wechat_id = handle_user_id(data.get('user_id'))
 
         if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
-            client = Client.objects.filter(id=wechat_id).first()
+            client = Client.objects.filter(id=client_id).first()
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
             if client.token != token:
@@ -211,7 +209,7 @@ def FansView(request):
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
-        order_id = create_num(wechat_id, project_id)
+        order_id = create_num(client_id, project_id)
         hs_order_id_num = q.encode(int(order_id))
         msg = {
             "status_order": "未开始",
@@ -258,12 +256,11 @@ def ConfirmView(request):
         token = data.get("token")
         if package_id and need_gold and works_link and kuaishou_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        user_id = handle_user_id(data.get('user_id'))
 
         if len(str(client_id)) != 4:
             return JsonResponse(data={"status": 2004})
         try:
-            client = Client.objects.filter(id=user_id).first()
+            client = Client.objects.filter(id=client_id).first()
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
@@ -275,7 +272,7 @@ def ConfirmView(request):
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
-        order_id = create_num(user_id, 100)
+        order_id = create_num(client_id, 100)
         hs_order_id = q.encode(int(order_id))
         # ------------订单处理--------------------
 
@@ -313,7 +310,7 @@ def IntegralView(request):
 
         if order_id and gold and pay_type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        user_id = handle_user_id(data.get('user_id'))
+        user_id = data.get('user_id')
 
         try:
             client = Client.objects.filter(id=user_id).first()
@@ -389,7 +386,6 @@ def PayApi(request):
         if user_id and money and pay_type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
-        user_id = handle_user_id(data.get('user_id'))
 
         order_id = create_num(user_id, 1)
         try:
@@ -439,7 +435,7 @@ def CenterView(request):
         if client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
-        user_id = handle_user_id(data.get('user_id'))
+        user_id = data.get('user_id')
         try:
             user = Client.objects.filter(id=user_id).first()
         except Exception as e:
@@ -496,10 +492,9 @@ def NotesView(request):
         num_page = data.get("num_page", 10)
         if client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        user_id = handle_user_id(client_id)
 
         try:
-            orders = Order.objects.filter(client__id__exact=user_id).all().order_by("-create_date")
+            orders = Order.objects.filter(client__id__exact=client_id).all().order_by("-create_date")
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, 'msg': print(e)})
@@ -573,7 +568,7 @@ def ClientLoginView(request):
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
             client = Client()
-            client.username = client_name
+            client.username = client_name + "."+ unionid
             client.avatar = avatar_url
             client.token = token
             client.unionid = unionid
@@ -616,7 +611,7 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
-
+    client_version = LooseVersion(version_code)
     # if version_code is None:
     #     return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
 
@@ -630,26 +625,28 @@ def check_update(request):
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
 
+    new_version = LooseVersion(version)
     sdk_url = version_set.sdk_url
     update_msg = version_set.update_msg
+
     content = {
         "version":version,
         "sdk_url": sdk_url,
         "update_msg": update_msg
     }
 
-    if version_code is None:
-        return JsonResponse(data={"status": 0, "data": content})
+    # if client_version is None:
+    #     return JsonResponse(data={"status": 0, "data": content})
 
-    if version is None:
+    if version_code is None:
         return JsonResponse(data={"status": 4002, "msg": "获取版本号失败"})
 
         # 进行对比
-    if int(version) > version_code:
+    if new_version > client_version:
 
         return JsonResponse(data={"status": 4203, "data": content})
 
-    return JsonResponse(data={"status": 0})
+    return JsonResponse(data={"status": 0,"msg":"不用更新"})
 
 
 """written by Despair"""

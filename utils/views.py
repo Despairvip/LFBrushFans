@@ -114,13 +114,13 @@ def amount2integral(user, amount):
 def socket_create_order_time():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-
-# 处理用户id
-def handle_user_id(user_id):
-    hs_user_id = int(user_id) - 1000
-    if hs_user_id < 0:
-        return JsonResponse({"msg": "用户id错误"})
-    return hs_user_id
+#
+# # 处理用户id
+# def handle_user_id(user_id):
+#     hs_user_id = int(user_id) - 1000
+#     if hs_user_id < 0:
+#         return JsonResponse({"msg": "用户id错误"})
+#     return hs_user_id
 
 
 # 判断条件

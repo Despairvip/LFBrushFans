@@ -32,8 +32,8 @@ class Client(AbstractUser):
 
     def to_dict(self):
         dict = {
-            "user_id": 1000 + self.id,
-            "user_name": self.username,
+            "user_id": self.id,
+            "user_name": (self.username).split(".")[0],
             "gold": self.gold,
             "phone_num": self.phone_num,
             "consume_gold": self.consume_gold,
