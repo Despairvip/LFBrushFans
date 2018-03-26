@@ -191,7 +191,7 @@ def UserSearchView(request):
             users = Client.objects.get(id=user_id)
         else:
             user_name = data.get("user_name")
-            users = Client.objects.get(username=user_name)
+            users = Client.objects.get(name=user_name)
 
 
         if users:

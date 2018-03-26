@@ -38,7 +38,7 @@ def Create_alipay_order():
         debug=True  # 默认False  配合沙箱模式使用
     )
     return alipay
-
+    alipay.verify
 
 # 微信支付配置信息
 """

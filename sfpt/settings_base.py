@@ -15,7 +15,6 @@ import os
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.8/howto/deployment/checklist/
 
@@ -57,15 +56,14 @@ CORS_ALLOW_HEADERS = (
     'Pragma',
 )
 
-
 # DEBUG = True # 通过这种方式可以打开 DEBUG 模式
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,
     'formatters': {
         'standard': {
-                'format': '%(levelname)s %(asctime)s %(message)s'
-                },
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
     },
     'filters': {
     },
@@ -73,25 +71,25 @@ LOGGING = {
         'mail_admins': {
             'level': 'ERROR',
             'class': 'django.utils.log.AdminEmailHandler',
-            'formatter':'standard',
+            'formatter': 'standard',
         },
         'test1_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':os.path.join(BASE_DIR,'utils/log/app_log.log').replace('\\','/'),
-            'formatter':'standard',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'utils/log/app_log.log').replace('\\', '/'),
+            'formatter': 'standard',
         },
         'test2_handler': {
-            'level':'DEBUG',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':os.path.join(BASE_DIR,'utils/log/admin_log.log').replace('\\','/'),
-            'formatter':'standard',
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'utils/log/admin_log.log').replace('\\', '/'),
+            'formatter': 'standard',
         },
         'backManagerHandler': {
-            'level':'INFO',
-            'class':'logging.handlers.RotatingFileHandler',
-            'filename':os.path.join(BASE_DIR,'utils/log/backManager.log').replace('\\','/'),
-            'formatter':'standard',
+            'level': 'INFO',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'utils/log/backManager.log').replace('\\', '/'),
+            'formatter': 'standard',
         },
     },
     'loggers': {
@@ -100,28 +98,26 @@ LOGGING = {
             'level': 'ERROR',
             'propagate': True,
         },
-        'django_app':{
+        'django_app': {
             'handlers': ['test1_handler'],
             'level': 'INFO',
             'propagate': False
         },
-        'django_admin':{
-            'handlers': ['test2_handler','backManagerHandler'],
+        'django_admin': {
+            'handlers': ['test2_handler', 'backManagerHandler'],
             'level': 'INFO',
             'propagate': False
         },
-        'djangoBackManager':{
-            'handers':['backManagerHandler'],
-            'level':'INFO',
+        'djangoBackManager': {
+            'handers': ['backManagerHandler'],
+            'level': 'INFO',
             'propagate': False
         }
     }
 }
 
-
-
 INSTALLED_APPS = (
-    'corsheaders',##
+    'corsheaders',  ##
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -136,8 +132,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
-    'corsheaders.middleware.CorsMiddleware',##
-    'django.middleware.common.CommonMiddleware',##
+    'corsheaders.middleware.CorsMiddleware',  ##
+    'django.middleware.common.CommonMiddleware',  ##
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -150,7 +146,7 @@ ROOT_URLCONF = 'sfpt.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR+"templates",],
+        'DIRS': [BASE_DIR + "templates", ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -165,18 +161,14 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'sfpt.wsgi.application'
 
-
-
-
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'LFbrushFans',
-        'USER':'root',
-        'PASSWORD':'',
-        'HOST':'127.0.0.1',
-        'PORT':'3306'
+        'USER': 'root',
+        'PASSWORD': '',
+        'HOST': '127.0.0.1',
+        'PORT': '3306'
     }
 }
 # CACHES = {
@@ -207,7 +199,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
@@ -215,14 +206,14 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # alipay
-ALIPAY_APPID = 	"2016091100488045"
+ALIPAY_APPID = "2016091100488045"
 
 AUTH_USER_MODEL = 'kuaishou_admin.Client'
 
 LOGIN_URL = "/index/"
 
 # alipay
-ALIPAY_APPID = 	"2018011601908317"
+ALIPAY_APPID = "2016091100488045"
 # 微信登录
-APP_ID = 'wx5f4ea0928a45436d'
-SECRET_APP = '5576b3284398086686a878e4732ed8a6'
+
+SECRET_APP = '5576b3284398086686a878e4732ed8a6'  # 'wx5f4ea0928a45436d' /ClientLoginView

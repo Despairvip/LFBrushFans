@@ -1,15 +1,20 @@
 import decimal
 
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import ASCIIUsernameValidator, UnicodeUsernameValidator
 from django.db import models
 
-
 # Create your models here.
+from django.utils import six
+from django.utils.translation import ugettext_lazy as _
+
+
 class Client(AbstractUser):
     choices_login_type = (
         (0, "微信登陆"),
         (1, 'qq登陆')
     )
+
     hands_id = models.CharField(max_length=20, default='')
     # 总消费
     consume_gold = models.IntegerField(default=0)
@@ -18,22 +23,23 @@ class Client(AbstractUser):
     # 金币
     gold = models.IntegerField(default=0)
     # 用户名
-    # name = models.CharField(max_length=20, default=0)
+    username_validator = UnicodeUsernameValidator() if six.PY3 else ASCIIUsernameValidator()
 
+    name = models.CharField(max_length=500,default="",  validators=[username_validator],)
     avatar = models.CharField(max_length=500, default='', null=True)
 
     token = models.CharField(max_length=500, default='')
     unionid = models.CharField(max_length=500, default='', null=True)
     login_type = models.IntegerField(default=0, choices=choices_login_type)
-    version = models.IntegerField(default=1)
+    version = models.CharField(max_length=50, default='')
 
     def __str__(self):
-        return self.username
+        return self.name
 
     def to_dict(self):
         dict = {
             "user_id": self.id,
-            "user_name": (self.username).split(".")[0],
+            "user_name": self.name,
             "gold": self.gold,
             "phone_num": self.phone_num,
             "consume_gold": self.consume_gold,
@@ -216,6 +222,15 @@ class MoneyAndGold(models.Model):
     """
     设置金钱和积分的对应关系表
     """
-    gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))#积分
-    money = models.DecimalField("金钱", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))#金钱
+    gold = models.DecimalField("积分", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))  # 积分
+    money = models.DecimalField("金钱", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))  # 金钱
 
+
+class LoginFrom(models.Model):
+    openid = models.CharField(max_length=500, default="")
+    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    third_name = models.CharField(max_length=20, default="")
+    app_id = models.CharField(max_length=20, default="")
+
+    class Meta:
+        db_table = "third_from"

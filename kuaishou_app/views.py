@@ -6,7 +6,9 @@ from distutils.version import LooseVersion
 
 import redis
 import requests
+from django.http import HttpResponse
 from django.http import HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 
 from common.returnMessage import MessageResponse
 from sfpt import settings
@@ -15,12 +17,14 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from hashids import Hashids
 
-from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement, MoneyAndGold
+from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement, MoneyAndGold, \
+    LoginFrom
 from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
     socket_create_order_time, Create_wechatpay_order as create_wechat, \
     conditions, expired_message, check_token
+
 expired_message()
 down = gifshow()
 # 实例化一个加密对象
@@ -29,6 +33,7 @@ q = Hashids()
 logger = logging.getLogger("django_app")
 
 conn = redis.Redis()
+
 
 @check_token
 def show_gold_money(request):
@@ -54,8 +59,7 @@ def show_gold_money(request):
 
                 data.append(data_dict)
 
-            return MessageResponse(0,data=data)
-
+            return MessageResponse(0, data=data)
 
 
 @check_token
@@ -254,6 +258,7 @@ def ConfirmView(request):
         kuaishou_id = data.get('hands_id')
         client_id = data.get("user_id")
         token = data.get("token")
+
         if package_id and need_gold and works_link and kuaishou_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
@@ -279,20 +284,20 @@ def ConfirmView(request):
         order_combo = Order_combo.objects.filter(id=package_id).first()
 
         msg = {
-                "status_order": "未开始",
-                "ordered_num": '',
-                "user_name": client_id,
-                "work_links": works_link,
-                "project_name": order_combo.name,
-                "order_id": hs_order_id,
-                "kuaishou_id": kuaishou_id,
-                "create_order_time": socket_create_order_time(),
-            }
+            "status_order": "未开始",
+            "ordered_num": '',
+            "user_name": client_id,
+            "work_links": works_link,
+            "project_name": order_combo.name,
+            "order_id": hs_order_id,
+            "kuaishou_id": kuaishou_id,
+            "create_order_time": socket_create_order_time(),
+        }
         msg_json = json.dumps(msg)
         obj = RedisHelper()
         obj.public(msg_json)
         order = Order(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
-                          link_works=works_link, order_id_num=order_id,count_init=0, type_id=1)
+                      link_works=works_link, order_id_num=order_id, count_init=0, type_id=1)
 
         order.save()
 
@@ -307,6 +312,8 @@ def IntegralView(request):
         gold = data.get('gold')
         pay_type = data.get("pay_type")
         token = data.get("token")
+
+        # 校验数据
 
         if order_id and gold and pay_type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
@@ -323,33 +330,44 @@ def IntegralView(request):
 
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token"})
+
+        # 支付宝支付
+
         if pay_type == '0':
             alipay = create_alipay()
-            while True:
-                response = alipay.api_alipay_trade_query(order_id)  # response是一个字典
 
-                # 判断支付结果
-                code = response.get("code")  # 支付宝接口调用成功或者错误的标志
-                trade_status = response.get("trade_status")  # 用户支付的情况
+            # 支付宝交易号
+            ali_pay_num = data.get("trade_no")
+            # 实收金额
+            amount_money = data.get("receipt_amount")
+            # 修改订单状态
 
-                if code == "10000" and trade_status == "TRADE_SUCCESS":
-                    # 表示用户支付成功
-                    # 修改订单的状态，变为待评论状态
-                    pay.status = 0
-                    # 更新订单的支付宝交易编号
-                    pay.ddh = response.get("trade_no")
-                    pay.save()
-                    client.gold += gold
-                    client.save()
-                    return JsonResponse({"code": 0, "message": "支付成功"})
-                elif code == "40004" or code == "10000":
-                    # 表示支付宝接口调用暂时失败，（支付宝的支付订单还未生成） 后者 等待用户支付
-                    # 继续查询
-                    continue
-                else:
-                    # 支付失败
-                    # 返回支付失败的通知
-                    return JsonResponse({"code": 3001, "msg": "支付失败"})
+
+            # while True:
+            #     response = alipay.api_alipay_trade_query(order_id)  # response是一个字典
+            #
+            #     # 判断支付结果
+            #     code = response.get("code")  # 支付宝接口调用成功或者错误的标志
+            #     trade_status = response.get("trade_status")  # 用户支付的情况
+            #
+            #     if code == "10000" and trade_status == "TRADE_SUCCESS":
+            #         # 表示用户支付成功
+            #         # 修改订单的状态，变为待评论状态
+            #         pay.status = 0
+            #         # 更新订单的支付宝交易编号
+            #         pay.ddh = response.get("trade_no")
+            #         pay.save()
+            #         client.gold += gold
+            #         client.save()
+            #         return JsonResponse({"code": 0, "message": "支付成功"})
+            #     elif code == "40004" or code == "10000":
+            #         # 表示支付宝接口调用暂时失败，（支付宝的支付订单还未生成） 后者 等待用户支付
+            #         # 继续查询
+            #         continue
+            #     else:
+            #         # 支付失败
+            #         # 返回支付失败的通知
+            #         return JsonResponse({"code": 3001, "msg": "支付失败"})
         elif pay_type == 1:
             wechat_pay = create_wechat()
             while True:
@@ -365,6 +383,24 @@ def IntegralView(request):
                     client.gold += gold
                     client.save()
                     return JsonResponse({"code": 0, "msg": "支付成功"})
+
+
+''' written by Despair
+    支付回调函数
+'''
+
+@csrf_exempt
+def notify(request):
+    data = request.POST.dict()
+    signature = data.pop("sign")
+
+    print(signature)
+    alipay = create_alipay()
+    success = alipay.verify(data, signature)
+    if success and data["trade_status"] in ("TRADE_SUCCESS", "TRADE_FINISHED"):
+        print("trade succeed")
+        return HttpResponse("success")
+
 
 
 '''
@@ -386,6 +422,7 @@ def PayApi(request):
         if user_id and money and pay_type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
+        # 开启支付
 
         order_id = create_num(user_id, 1)
         try:
@@ -393,6 +430,7 @@ def PayApi(request):
                 ali_pay = create_alipay()
                 # App支付，将order_string返回给app即可
 
+                # 创建支付宝支付数据
 
                 order_string = ali_pay.api_alipay_trade_app_pay(
                     out_trade_no=order_id,
@@ -401,21 +439,42 @@ def PayApi(request):
                     notify_url='http://120.26.60.181:8001/pay/new/notify/alipay'  # 可选, 不填则使用默认notify url
                 )
 
+                # 创建支付订单
+                pay_order = PayListModel()
+                pay_order.order_id = order_id
+                pay_order.client.id = user_id
+                pay_order.money = money
+                pay_order.order_type = pay_type
+
+                pay_order.save()
+
                 hs_order_id = q.encode(int(order_id))
                 return JsonResponse(data={"status": 0, "ali_msg": order_string, "order_id": hs_order_id})
-            wechat_pay = create_wechat()
-            # 统一支付接口
-            result = wechat_pay.order.create(
-                out_trade_no=order_id,
-                trade_type='App',
-                body="LFBrushFans%s" % order_id,
-                total_fee=money,
-                notify_url='http://192.168.0.159:4444/#/home'
-            )
 
-            payment = wechat_pay.order.get_appapi_params(result["prepay_id"])
-            hs_order_id = q.encode(int(order_id))
-            return JsonResponse(data={"status": 0, "wechat_msg": payment, "order_id": hs_order_id})
+            elif pay_type == 1:
+                wechat_pay = create_wechat()
+                # 统一支付接口
+                result = wechat_pay.order.create(
+                    out_trade_no=order_id,
+                    trade_type='App',
+                    body="LFBrushFans%s" % order_id,
+                    total_fee=money,
+                    notify_url='http://192.168.0.159:4444/#/home'
+                )
+
+                payment = wechat_pay.order.get_appapi_params(result["prepay_id"])
+
+                # 保存交易信息
+                pay_order = PayListModel()
+                pay_order.order_id = order_id
+                pay_order.client.id = user_id
+                pay_order.money = money
+                pay_order.order_type = pay_type
+
+                pay_order.save()
+
+                hs_order_id = q.encode(int(order_id))
+                return JsonResponse(data={"status": 0, "wechat_msg": payment, "order_id": hs_order_id})
         except Exception as e:
             logger.error(e)
             return JsonResponse({"status": 3001, 'msg': "异常重新尝试"})
@@ -480,8 +539,6 @@ xialing
 '''
 
 
-
-
 @check_token
 def NotesView(request):
     if request.method == "POST":
@@ -539,7 +596,7 @@ def ClientLoginView(request):
         elif type == '0':
             code = data['code']
             secret = settings.SECRET_APP
-            appid = settings.APP_ID
+            appid = 'wx5f4ea0928a45436d'
             if code is not None:
                 res = requests.get(
                     'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code' % (
@@ -555,27 +612,39 @@ def ClientLoginView(request):
 
             user_info = requests.get('https://api.weixin.qq.com/sns/userinfo?access_token=%s&openid=%s' % (
                 token, res_data_openid)).json()
-
             client_name = user_info['nickname'].encode('iso-8859-1').decode('utf-8')
             avatar_url = user_info['headimgurl']
             unionid = user_info["unionid"]
+
             if user_info.get('errcode') is not None:
                 return JsonResponse(data={"status": 6000, "msg": user_info.get("errcode")})
+
+            # 处理用户
 
             client = Client.objects.filter(unionid=unionid).first()
             if client is not None:
                 client.token = token
+                client.avatar = avatar_url
+                client.name = client_name
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
-            client = Client()
-            client.username = client_name + "."+ unionid
-            client.avatar = avatar_url
-            client.token = token
-            client.unionid = unionid
+
+            client = Client(username=res_data_openid, name=client_name, avatar=avatar_url, token=token, unionid=unionid,
+                            login_type=0)
             client.save()
             content = client.to_dict()
+
+            # 第三方登录信息
+            third_from = LoginFrom()
+            third_from.client = client
+            third_from.third_name = "wechat"
+            third_from.app_id = appid
+            third_from.openid = res_data_openid
             ###
-            conn.set('token:%s' % token, '1')
+
+            # //TODO
+            # 添加token
+
 
             return JsonResponse(data={"status": 0, "data": content, "token": token})
         # qq登陆
@@ -587,14 +656,34 @@ def ClientLoginView(request):
                 'https://graph.qq.com/user/get_user_info?access_token=%s&oauth_consumer_key=%s&openid=%s' % (
                     token, oauth_consumer_key, openid)).json()
 
-            avatar = res.get("figureurl_qq_1")
+            avatar = res.get("figureurl_2")
+
+            print(avatar)
             nickname = res.get("nickname")
+
+            # 处理用户
+
             client = Client.objects.filter(unionid=openid).first()
             if client is not None:
+                client.avatar = avatar
+                print(client.avatar)
+
+                client.nickname = nickname
+                client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
             try:
-                client = Client(username=nickname, avatar=avatar, unionid=openid, login_type=1, token=token)
+                client = Client(username=openid, name=nickname, avatar=avatar, unionid=openid, login_type=1,
+                                token=token)
                 client.save()
+
+                # 设置第三方登录信息
+                third_from = LoginFrom()
+                third_from.client = client
+                third_from.third_name = 'qq'
+                third_from.app_id = 'null'
+                third_from.openid = openid
+                third_from.save()
+
             except Exception as e:
                 return JsonResponse({"msg": print(e)})
             content = client.to_dict()
@@ -611,7 +700,7 @@ def check_update(request):
     '''检查更新'''
     data = json.loads(request.body.decode())
     version_code = data.get("version_code")
-    client_version = LooseVersion(version_code)
+    client_version = LooseVersion(str(version_code))
     # if version_code is None:
     #     return HttpResponseRedirect("http://yuweining.cn/t/Html5/404html/")
 
@@ -625,12 +714,12 @@ def check_update(request):
         logger.error(e)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
 
-    new_version = LooseVersion(version)
+    new_version = LooseVersion(str(version))
     sdk_url = version_set.sdk_url
     update_msg = version_set.update_msg
 
     content = {
-        "version":version,
+        "version": version,
         "sdk_url": sdk_url,
         "update_msg": update_msg
     }
@@ -639,14 +728,13 @@ def check_update(request):
     #     return JsonResponse(data={"status": 0, "data": content})
 
     if version_code is None:
-        return JsonResponse(data={"status": 4002, "msg": "获取版本号失败"})
+        return JsonResponse(data={"status": 4002, "data": content})
 
         # 进行对比
     if new_version > client_version:
-
         return JsonResponse(data={"status": 4203, "data": content})
 
-    return JsonResponse(data={"status": 0,"msg":"不用更新"})
+    return JsonResponse(data={"status": 0, "msg": "不用更新"})
 
 
 """written by Despair"""
@@ -676,7 +764,3 @@ def shield_wechat(request):
      屏蔽微信登陸
      '''
     return JsonResponse(data={"data": False})
-
-
-
-
