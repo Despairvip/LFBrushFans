@@ -128,6 +128,7 @@ def remenTaocan(request):
                     'project_num': detail.count_project,
                     'project_id': detail.id,
                 })
+
             data.append(taocan_msg)
 
         return JsonResponse({"status": 0, "data": data})
