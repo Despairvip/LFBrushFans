@@ -596,8 +596,6 @@ def ClientLoginView(request):
             nickname = res.get("nickname")
             client = Client.objects.filter(unionid=openid).first()
             if client is not None:
-                client.token = token
-                client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
             try:
                 client = Client(username=nickname, avatar=avatar, unionid=openid, login_type=1, token=token)
