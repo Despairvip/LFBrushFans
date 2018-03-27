@@ -31,6 +31,9 @@ from utils.tornado_websocket.websocket_test import redisconn
 def Create_alipay_order():
     alipay = AliPay(
         appid=settings.ALIPAY_APPID,
+
+        # 添加回调地址
+
         app_notify_url=None,  # 默认回调url
         app_private_key_path=os.path.join(settings.BASE_DIR, "utils/app_private_key.pem"),
         alipay_public_key_path=os.path.join(settings.BASE_DIR, "utils/alipay_public_key.pem"),
@@ -116,13 +119,13 @@ def amount2integral(user, amount):
 def socket_create_order_time():
     return datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-
-# 处理用户id
-def handle_user_id(user_id):
-    hs_user_id = int(user_id) - 1000
-    if hs_user_id < 0:
-        return JsonResponse({"msg": "用户id错误"})
-    return hs_user_id
+#
+# # 处理用户id
+# def handle_user_id(user_id):
+#     hs_user_id = int(user_id) - 1000
+#     if hs_user_id < 0:
+#         return JsonResponse({"msg": "用户id错误"})
+#     return hs_user_id
 
 
 # 判断条件

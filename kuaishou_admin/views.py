@@ -9,7 +9,7 @@ from django.core.paginator import Paginator
 
 
 # Create your views here.
-from utils.views import login_admin_required_json, handle_user_id, expired_message
+from utils.views import login_admin_required_json, expired_message
 expired_message()
 encrypt = Hashids()
 logger = logging.getLogger("django_admin")
@@ -191,7 +191,7 @@ def UserSearchView(request):
             users = Client.objects.get(id=user_id)
         else:
             user_name = data.get("user_name")
-            users = Client.objects.get(username=user_name)
+            users = Client.objects.get(name=user_name)
 
 
         if users:
@@ -240,7 +240,7 @@ def ModifyGoldView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
-        user_id = handle_user_id(data.get("user_id"))
+        user_id = data.get("user_id")
         gold_num = data.get("gold_num")
         try:
             user = Client.objects.filter(id=user_id).update(gold=gold_num)

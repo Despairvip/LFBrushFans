@@ -18,7 +18,7 @@ from django.shortcuts import render
 
 
 # Create your views here.
-from backManage.core_token import create_token
+from backManage.core import create_token
 from backManage.libs_save_results import save_taocan_detail, update_taocan
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client, MoneyAndGold
