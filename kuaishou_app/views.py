@@ -62,15 +62,15 @@ def ClickView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works_link = data.get('works')
-        click_num = data.get('click_num')
-        need_gold = data.get('gold')
+
         client_id = data.get("user_id")
 
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
+        # pro_id = data.get('pro_id') #用户点击的是双击项目里面的哪个具体双击数和积分  // 周周
         token = data.get("token")
 
-        if works_link and need_gold and click_num and project_id and client_id and client_id is None:
+        if works_link and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
         if len(str(client_id)) != 4:
@@ -82,6 +82,7 @@ def ClickView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 4001, "msg": print(e)})
+
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token错误"})
 
@@ -89,6 +90,8 @@ def ClickView(request):
 
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
+        click_num = project.count_project
+        need_gold = project.pro_gold
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
@@ -121,15 +124,15 @@ def PlayView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works_link = data.get('works')
-        play_num = data.get('play_num')
-        need_gold = data.get('gold')
+        # play_num = data.get('play_num')
+        # need_gold = data.get('gold')
         project_id = data.get('project_id')
         client_id = data.get("user_id")
 
         kuaishou_id = data.get('hands_id')
 
         token = data.get("token")
-        if works_link and need_gold and play_num and project_id and client_id is None:
+        if works_link and project_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
         if len(str(client_id)) != 4:
@@ -147,6 +150,8 @@ def PlayView(request):
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
 
+        play_num = project.count_project
+        need_gold = project.pro_gold
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
@@ -179,13 +184,13 @@ def FansView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         hands_id = data.get("hands_id")
-        fan_num = data.get("fan_num")
-        need_gold = int(data.get("gold"))
+        # fan_num = data.get("fan_num")
+        # need_gold = int(data.get("gold"))
         project_id = data.get("project_id")
         client_id = data.get("user_id")
         token = data.get("token")
 
-        if hands_id and need_gold and fan_num and client_id and hands_id is None:
+        if hands_id and client_id and hands_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         wechat_id = handle_user_id(data.get('user_id'))
 
@@ -207,6 +212,9 @@ def FansView(request):
 
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
+
+        fan_num = project.count_project
+        need_gold = project.pro_gold
 
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
@@ -251,12 +259,12 @@ def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         package_id = data.get('package_id')
-        need_gold = data.get('gold')
+        # need_gold = data.get('gold')
         works_link = data.get('works')
         kuaishou_id = data.get('hands_id')
         client_id = data.get("user_id")
         token = data.get("token")
-        if package_id and need_gold and works_link and kuaishou_id and client_id is None:
+        if package_id and works_link and kuaishou_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         user_id = handle_user_id(data.get('user_id'))
 
@@ -272,6 +280,8 @@ def ConfirmView(request):
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token"})
 
+        order_combo = Order_combo.objects.filter(id=package_id).first()
+        need_gold = order_combo.pro_gold
         if not conditions(client, need_gold):
             return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
 
@@ -279,7 +289,8 @@ def ConfirmView(request):
         hs_order_id = q.encode(int(order_id))
         # ------------订单处理--------------------
 
-        order_combo = Order_combo.objects.filter(id=package_id).first()
+
+
 
         msg = {
                 "status_order": "未开始",
