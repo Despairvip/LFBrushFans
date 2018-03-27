@@ -81,4 +81,5 @@ def create_token(id):
     return md_res + '-' + id_secret
 
 
-create_token(42)
+
+
