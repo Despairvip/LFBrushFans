@@ -1,4 +1,3 @@
-
 '''
 ower:@shadoesmilezhou
 email:630551760@qq.com
@@ -8,15 +7,18 @@ IDE:PyCharm
 '''
 
 import base64
-import os,django
+import os, django
 
 import re
 from django.template import base
 
 from lib_redis import RedisHelper
+import sfpt
+import os
+# os.environ.update({"DJANGO_SETTINGS_MODULE": "sftp.settings"})
 #
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE","sfpt/sfpt.settings")# project_name 项目名称
-# django.setup()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE","sfpt.settings")# project_name 项目名称
+django.setup()
 
 
 import json
@@ -30,30 +32,28 @@ from concurrent.futures import ThreadPoolExecutor
 from tornado.concurrent import run_on_executor
 
 # from django.contrib.sessions.models import Session
+from core import secret_to_userid
+from kuaishou_admin.models import Client
+
+# super_user = ["admin"]
 
 
-super_user = ["admin"]
 # Tag = "_auth_user_id"
 
 
-
-
-
-#TODO 需要验证身份才能使用
+# TODO 需要验证身份才能使用
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     executor = ThreadPoolExecutor(10)
 
-
     def check_origin(self, origin):
-        return True
+        return True  # 允许WebSocket的跨域请求
 
     def open(self):
-        # self.write_message("hahahahaha")
+
         self.status_close = False
 
-
     @run_on_executor
-    def on_message(self,message):
+    def on_message(self, message):
         datas = [
             {
                 "status_order": "未开始",
@@ -116,57 +116,50 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 "create_order_time": "2018-03-06T00:00:00Z"
             },
         ]
-        obj = RedisHelper()
+
+
         obj_msg = json.loads(message)
-        # session_key = self.get_cookie("name")
-        # print(session_key)
-
-        # 赋值订阅变量
-        redis_sub = obj.subscribe()
-        #
-        # sessionid = self.get_cookie("sessionid")
-        # print(sessionid)
-        # session_key = Session.objects.filter(session_key=sessionid).first()
-        # session_msg = session_key.session_data
-        # user_msg = base64.b64decode(session_msg).decode()
-
-        # print(user_msg)
-        # search_msg = re.match( r'(.*) "name:" (.*?) .*', user_msg, re.M|re.I)
-        # print(session_msg)
-        # for i in super_user:
-        #     if i in user_msg:
 
 
-        if obj_msg['action'] == "start":
-            # for i in super_user:
-            #     if "admin" in i:
-            # # 循环执行如下命令
-            #         while not self.status_close:
-            #             # 二次调用parse_response() 开始接收
-            #             msg_json = redis_sub.parse_response(timeout = 1)[2]
-            #             print(msg_json)
-            #             msg = msg_json.decode()
-            #             time.sleep(1)
-            #             self.write_message(msg)
-            #         print("结束循环")
+        print(obj_msg)
+        token = obj_msg.get("token")
+        print(token)
+        if token is not None:
+            self.init_data(token)
 
-            #TODO 这里还要判断是否断开连接 on_close不可靠
+        if obj_msg.get("action") == "HeartBeat":
+            print(obj_msg.get("action"))
+            self.test_heart()
+        if token is None:
+            self.write_message({"action":"noLogin"})
+
+    def init_data(self, token):
+
+        token = Client.objects.filter(token=token).first()
+        print('******')
+        if token is not None:
             while not self.status_close:
+                self.write_message({"action":"test....."})
+                if self.status_close:
+                    self.status_close = True
+                    break
+                obj = RedisHelper()
+                redis_sub = obj.subscribe()
                 data = redis_sub.get_message(True, 1)
                 if data:
-                    self.write_message(data)
-            print("结束循环")
+                    self.write_message({"action": "order", "data": data})
+        else:
+            self.write_message({"action":"noLogin"})
 
 
 
-
-
-
+    def test_heart(self):
+        print("++++++++")
+        self.write_message({'action':'heartbeat'})
+        pass
 
     def on_close(self):
         self.status_close = True
-
-
 
 
 class Application(tornado.web.Application):
@@ -174,10 +167,9 @@ class Application(tornado.web.Application):
         handlers = [
             (r'/ws', WebSocketHandler),
 
-
         ]
         print("debug")
-        tornado.web.Application.__init__(self, handlers,debug = True)
+        tornado.web.Application.__init__(self, handlers, debug=True)
 
 
 if __name__ == '__main__':
@@ -187,11 +179,8 @@ if __name__ == '__main__':
     parser.add_option("-p", "--port", dest="port", action="store", type="int", default="8081")
     (options, args) = parser.parse_args()
 
-
     ws_app = Application()
 
     server = tornado.httpserver.HTTPServer(ws_app)
     server.listen(options.port)
     tornado.ioloop.IOLoop.instance().start()
-
-
