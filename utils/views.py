@@ -30,6 +30,9 @@ from utils.tornado_websocket.websocket_test import redisconn
 def Create_alipay_order():
     alipay = AliPay(
         appid=settings.ALIPAY_APPID,
+
+        # 添加回调地址
+
         app_notify_url=None,  # 默认回调url
         app_private_key_path=os.path.join(settings.BASE_DIR, "utils/app_private_key.pem"),
         alipay_public_key_path=os.path.join(settings.BASE_DIR, "utils/alipay_public_key.pem"),
@@ -38,7 +41,7 @@ def Create_alipay_order():
         debug=True  # 默认False  配合沙箱模式使用
     )
     return alipay
-    alipay.verify
+
 
 # 微信支付配置信息
 """

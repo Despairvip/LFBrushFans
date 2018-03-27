@@ -22,7 +22,7 @@ class PayListModel(models.Model):
     pay_list_date = models.DateTimeField(auto_now_add=True)
     order_type = models.IntegerField("订单类型",choices=choices_ordertype,default=0)
     Amount_money = models.DecimalField("支付金额", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))  # 实际收钱
-
+    trade_no = models.CharField("支付宝流水号",max_length=200,default="")
 
     pay_type = models.IntegerField("支付类型",choices=choices_pay_type,default=1)
     remark = models.TextField("说明",default="")
