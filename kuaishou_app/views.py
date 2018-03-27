@@ -651,6 +651,7 @@ def CenterView(request):
         if user is None:
             return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
         content = user.to_dict()
+        print(content)
         return JsonResponse(data={"status": 0, "data": content})
 
 
@@ -783,12 +784,12 @@ def ClientLoginView(request):
             if client is not None:
                 client.token = token
                 client.avatar = avatar_url
-                client.name = client_name
+                client.nickname = client_name
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
 
-            client = Client(username=res_data_openid, name=client_name, avatar=avatar_url, token=token, unionid=unionid,
-                            login_type=0)
+            client = Client(username=res_data_openid, nickname=client_name, avatar=avatar_url, token=token, unionid=unionid,
+                            )
             client.save()
             # 第三方登录信息
             third_from = LoginFrom()
@@ -816,7 +817,6 @@ def ClientLoginView(request):
 
             avatar = res.get("figureurl_2")
 
-            print(avatar)
             nickname = res.get("nickname")
 
             # 处理用户
@@ -824,13 +824,12 @@ def ClientLoginView(request):
             client = Client.objects.filter(unionid=openid).first()
             if client is not None:
                 client.avatar = avatar
-                print(client.avatar)
 
                 client.nickname = nickname
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
             try:
-                client = Client(username=openid, name=nickname, avatar=avatar, unionid=openid, login_type=1,
+                client = Client(username=openid, nickname=nickname, avatar=avatar, unionid=openid,
                                 token=token)
                 client.save()
 

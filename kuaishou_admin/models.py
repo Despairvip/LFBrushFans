@@ -15,19 +15,19 @@ class Client(AbstractUser):
     hands_id = models.CharField(max_length=20, default='')
     consume_gold = models.IntegerField(default=0)  # 总消费
     phone_num = models.CharField(max_length=15, blank=True, null=True)  # 联系方式
-    gold = models.DecimalField(default=0,max_digits=19, decimal_places=10,null=True)  # 金币
+    gold = models.DecimalField(max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'),null=True)  # 金币
     nickname = models.CharField(max_length=128, default="", )  # 昵称
     avatar = models.CharField(max_length=255, default='', null=True)
-    token = models.CharField(max_length=50, default='')
-
+    token = models.CharField(max_length=128, default='')
+    unionid = models.CharField(max_length=128,default="")
     def __str__(self):
         return self.name
 
     def to_dict(self):
         dict = {
             "user_id": userid_to_secret(self.id),
-            "user_name": self.name,
-            "gold": self.gold,
+            "user_name": self.nickname,
+            "gold": self.gold.quantize(decimal.Decimal("1.00")),
             "phone_num": self.phone_num,
             "consume_gold": self.consume_gold,
             "avatar": self.avatar
