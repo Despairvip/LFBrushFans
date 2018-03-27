@@ -1,4 +1,5 @@
 import datetime
+import decimal
 import hashlib
 import os
 import urllib.parse
@@ -133,7 +134,7 @@ xialing and zhouzhou
 
 
 def conditions(client, need_gold, ):
-    need_gold = int(need_gold)
+    need_gold = decimal.Decimal(need_gold)
 
     client_now_gold = client.gold
     consume_gold = client.consume_gold
