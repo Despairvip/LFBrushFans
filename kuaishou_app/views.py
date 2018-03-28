@@ -4,6 +4,8 @@ import random
 import re
 from distutils.version import LooseVersion
 
+from django.views.generic.base import TemplateResponseMixin
+
 import redis
 import requests
 from django.http import HttpResponse
@@ -86,24 +88,20 @@ def ClickView(request):
 
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
         # 项目金币、数量
         try:
             project = Project.objects.get(id=project_id)
 
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" :2001 ,"msg" : "项目不存在"})
-        click_num = project.count_project
-        need_gold = project.pro_gold
+            return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
 
         # 检验用户
 
         if works_link and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        # if len(str(client_id)) != 4:
-        #     print("*******")
-        #     return JsonResponse(data={"status": 2004,})
+
         try:
             client = Client.objects.filter(id=client_id).first()
             if client is None:
@@ -155,8 +153,6 @@ def PlayView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works_link = data.get('works')
-        # play_num = data.get('play_num')
-        # need_gold = data.get('gold')
         project_id = data.get('project_id')
 
         kuaishou_id = data.get('hands_id')
@@ -170,7 +166,7 @@ def PlayView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
             # 项目金币、数量
         try:
@@ -179,8 +175,6 @@ def PlayView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
-        play_num = project.count_project
-        need_gold = project.pro_gold
 
 
         if works_link and project_id and client_id is None:
@@ -233,8 +227,6 @@ def FansView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         hands_id = data.get("hands_id")
-        # fan_num = data.get("fan_num")
-        # need_gold = int(data.get("gold"))
         project_id = data.get("project_id")
         token = data.get("token")
         # 序列化用户id
@@ -244,9 +236,9 @@ def FansView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
-        # 判断金币
+            # 判断金币
             # 项目金币、数量
         try:
             project = Project.objects.get(id=project_id)
@@ -254,8 +246,6 @@ def FansView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
-        fan_num = project.count_project
-        need_gold = project.pro_gold
 
 
         if hands_id and client_id and hands_id is None:
@@ -325,7 +315,7 @@ def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         package_id = data.get('package_id')
-        # need_gold = data.get('gold')
+
         works_link = data.get('works')
         kuaishou_id = data.get('hands_id')
 
@@ -343,7 +333,7 @@ def ConfirmView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         # 判断金币
         try:
@@ -351,7 +341,7 @@ def ConfirmView(request):
 
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 2004,"msg" : "套餐不存在"})
+            return JsonResponse(data={"status": 2004, "msg": "套餐不存在"})
         need_gold = combo.pro_gold
 
         # 判断用户信息
@@ -423,7 +413,7 @@ def IntegralView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         try:
             client = Client.objects.filter(id=client_id).first()
@@ -444,9 +434,9 @@ def IntegralView(request):
                 pay_order = PayListModel.objects.filter(order_id=order_id).firest()
             except Exception as e:
                 logger.error(e)
-                return JsonResponse(data={"status" :2001 ,"msg" :"数据获取错误"})
+                return JsonResponse(data={"status": 2001, "msg": "数据获取错误"})
             if pay_order is None:
-                return JsonResponse(data={"status" : 2004,"msg" : "订单不存在"})
+                return JsonResponse(data={"status": 2004, "msg": "订单不存在"})
             if pay_order.status == 1:
                 db_gold = MoneyAndGold.objects.filter(money=pay_order.money).first()
                 gold = db_gold.gold
@@ -455,32 +445,31 @@ def IntegralView(request):
                     pay_order.save()
                 except Exception as e:
                     logger.error(e)
-                    return JsonResponse(data={"status" : 2001,"msg" : "积分修改失败"})
-                return JsonResponse(data={"status" : 0,"msg" : "充值成功"})
+                    return JsonResponse(data={"status": 2001, "msg": "积分修改失败"})
+                return JsonResponse(data={"status": 0, "msg": "充值成功"})
 
 
 
 
 
-        # elif pay_type == 1:
-        #     try:
-        #         pay_order = PayListModel.objects.filter(order_id=order_id).firest()
-        #     except Exception as e:
-        #         logger.error(e)
-        #         return JsonResponse(data={"status" :2001 ,"msg" :"数据获取错误"})
-        #     if pay_order is None:
-        #         return JsonResponse(data={"status" : 2004,"msg" : "订单不存在"})
-        #     if pay_order.status == 1:
-        #         db_gold = MoneyAndGold.objects.filter(money=pay_order.money).first()
-        #         gold = db_gold.gold
-        #         try:
-        #             pay_order.client.gold += gold
-        #             pay_order.save()
-        #         except Exception as e:
-        #             logger.error(e)
-        #             return JsonResponse(data={"status" : 2001,"msg" : "积分修改失败"})
-        #         return JsonResponse(data={"status" : 0,"msg" : "充值成功"})
-
+                # elif pay_type == 1:
+                #     try:
+                #         pay_order = PayListModel.objects.filter(order_id=order_id).firest()
+                #     except Exception as e:
+                #         logger.error(e)
+                #         return JsonResponse(data={"status" :2001 ,"msg" :"数据获取错误"})
+                #     if pay_order is None:
+                #         return JsonResponse(data={"status" : 2004,"msg" : "订单不存在"})
+                #     if pay_order.status == 1:
+                #         db_gold = MoneyAndGold.objects.filter(money=pay_order.money).first()
+                #         gold = db_gold.gold
+                #         try:
+                #             pay_order.client.gold += gold
+                #             pay_order.save()
+                #         except Exception as e:
+                #             logger.error(e)
+                #             return JsonResponse(data={"status" : 2001,"msg" : "积分修改失败"})
+                #         return JsonResponse(data={"status" : 0,"msg" : "充值成功"})
 
 
 ''' written by Despair
@@ -489,7 +478,7 @@ def IntegralView(request):
 
 
 @csrf_exempt
-def notify(request,pay_type):
+def notify(request, pay_type):
     data = request.POST.dict()
 
     if pay_type == "alipay":
@@ -509,9 +498,9 @@ def notify(request,pay_type):
             money_order = PayListModel.objects.filter(ddh=out_trade_no).first()
             # 修改状态
             if money_order is None:
-                return JsonResponse(data={"status" :2004 ,"msg" :"订单不存在"})
+                return JsonResponse(data={"status": 2004, "msg": "订单不存在"})
             if money_order.money != total_amount:
-                return JsonResponse(data={"status" : 2002,"msg" :"支付金额出错"})
+                return JsonResponse(data={"status": 2002, "msg": "支付金额出错"})
             money_order.Amount_money = total_amount
             money_order.status = 1
             money_order.trade_no = trade_no
@@ -520,7 +509,7 @@ def notify(request,pay_type):
 
             return HttpResponse("success")
 
-    elif pay_type =="wechat":
+    elif pay_type == "wechat":
         xml = request.body.decode()["xml"]
 
         wechat = create_wechat()
@@ -534,17 +523,16 @@ def notify(request,pay_type):
             # 平台订单号
             wechat_pay_id = data["transaction_id"]
 
-
             money_order.Amount_money = user_money
             money_order.status = 1
             # 微信支付平台订单号
             money_order.trade_no = wechat_pay_id
             money_order.save()
 
-            return JsonResponse(data={"return_code" :"SUCCESS" ,"return_msg" :"OK"})
+            return JsonResponse(data={"return_code": "SUCCESS", "return_msg": "OK"})
         else:
 
-            return JsonResponse(data={"return_code" :"error" ,"return_msg" :"-1"})
+            return JsonResponse(data={"return_code": "error", "return_msg": "-1"})
 
 
 '''
@@ -564,10 +552,10 @@ def PayApi(request):
         pay_type = data.get("pay_type")
 
         # 金钱检测
-        db_gold = MoneyAndGold.objects.values_list("gold","money")
+        db_gold = MoneyAndGold.objects.values_list("gold", "money")
 
-        if (gold,money) not in db_gold:
-            return JsonResponse(data={"status" : 2004,"msg" : "金币有误"})
+        if (gold, money) not in db_gold:
+            return JsonResponse(data={"status": 2004, "msg": "金币有误"})
 
         # 序列化用户id
         if data.get("user_id") is None:
@@ -576,7 +564,7 @@ def PayApi(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
         # 用户校验
         if client_id and money and pay_type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
@@ -596,7 +584,7 @@ def PayApi(request):
                     subject="LFBrushFans%s" % order_id,
 
                     # 添加回调地址
-                    notify_url= "sfpt.remenhezi.com/pay/new/notify/alipay"  # 可选, 不填则使用默认notify url
+                    notify_url="sfpt.remenhezi.com/pay/new/notify/alipay"  # 可选, 不填则使用默认notify url
                 )
                 # print(pay_num)
                 # 创建支付订单
@@ -622,7 +610,7 @@ def PayApi(request):
                     total_fee=money,
 
                     # 添加回调地址
-                    notify_url= "sfpt.remenhezi.com/pay/new/notify/wechat"
+                    notify_url="sfpt.remenhezi.com/pay/new/notify/wechat"
                 )
 
                 payment = wechat_pay.order.get_appapi_params(result["prepay_id"])
@@ -662,7 +650,7 @@ def CenterView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         if client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
@@ -724,8 +712,7 @@ def NotesView(request):
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e)
-            return JsonResponse(data={"status" : 3104,"msg" : "用户不存在"})
-
+            return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         page = data.get("page", 1)
         # 一页几条数据
@@ -812,7 +799,8 @@ def ClientLoginView(request):
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
 
-            client = Client(username=res_data_openid, nickname=client_name, avatar=avatar_url, token=token, unionid=unionid,
+            client = Client(username=res_data_openid, nickname=client_name, avatar=avatar_url, token=token,
+                            unionid=unionid,
                             )
             client.save()
             # 第三方登录信息
@@ -874,7 +862,6 @@ def ClientLoginView(request):
             # 添加token
 
             my_token = create_token(user_id)
-
             return JsonResponse(data={"status": 0, 'data': content, "token": my_token})
         else:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
