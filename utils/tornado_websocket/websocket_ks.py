@@ -13,7 +13,7 @@ import re
 from django.template import base
 
 from lib_redis import RedisHelper
-import sfpt
+
 import os
 
 # os.environ.update({"DJANGO_SETTINGS_MODULE": "sftp.settings"})
@@ -55,18 +55,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
 
 
-    @run_on_executor
     def on_message(self, message):
 
         obj_msg = json.loads(message)
         print(obj_msg)
 
         if hasattr(self,"event_"+obj_msg["action"]):
-            print(getattr(self,"event_"+obj_msg["action"]))
+            # print(getattr(self,"event_"+obj_msg["action"]))
             getattr(self,"event_"+obj_msg["action"])(obj_msg)
         else:
             #no attr
-            print("no attr")
+            print("**************")
+            self.write_message({"action":"HeartBeat"})
             pass
 
 
@@ -83,18 +83,18 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         token = Client.objects.filter(token=token).first()
         if token:
             while not self.status_close:
-                print(11)
+
                 if self.status_close:
                     break
                 obj = RedisHelper()
                 redis_sub = obj.subscribe()
                 data = redis_sub.get_message(True, 1)
-                print(data)
+
                 if data:
                     data_new = json.loads(data.get("data").decode())
                     print(type(data_new),data_new)
                     self.write_message({"action":"order","data":data_new})
-                    print("***********")
+                    print("+++++++++")
                     continue
 
         else:
