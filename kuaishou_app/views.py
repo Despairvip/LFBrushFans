@@ -102,7 +102,7 @@ def ClickView(request):
 
         if works_link and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        if len(str(client_id)) != 4:
+        
             return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=client_id).first()
