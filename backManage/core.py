@@ -64,10 +64,10 @@ def secret_to_userid(secretid):
 
         final_secretid = '0' * int(num_zero) + str(secretid_dec)
 
-        return hashid.decode(final_secretid)
+        return hashid.decode(final_secretid)[0]
 
     else:
-        return hashid.decode(dec2hex(secretid))
+        return hashid.decode(dec2hex(secretid))[0]
 
 
 def create_token(id):
