@@ -20,6 +20,7 @@ from django.shortcuts import render
 # Create your views here.
 from backManage.core import create_token
 from backManage.libs_save_results import save_taocan_detail, update_taocan
+from backManage.permission import decorator_to_permission
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client, MoneyAndGold
 
@@ -244,7 +245,7 @@ def taocanManage(request):
         else:
             return MessageResponse(3104)
 
-
+@decorator_to_permission('superadmin')
 @login_required
 def showTaocan(request):
     if request.method == "POST":
@@ -378,6 +379,7 @@ def index(request):
 
 
 
+@decorator_to_permission('superadmin')
 @login_required
 def set_gold_money(request):
     '''
