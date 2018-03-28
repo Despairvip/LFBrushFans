@@ -16,6 +16,7 @@ from alipay import AliPay
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.db.models import F
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
 
@@ -136,25 +137,12 @@ xialing and zhouzhou
 '''
 
 
-def conditions(client, need_gold, ):
-    need_gold = decimal.Decimal(need_gold)
-
-    client_now_gold = client.gold
-    consume_gold = client.consume_gold
-    if client_now_gold < need_gold:
-        #
+def conditions(client_id, needgold):
+    res = Client.objects.filter(id=client_id, gold__gte=needgold).update(gold=F("gold") - needgold)
+    if res == 1:
+        return True
+    else:
         return False
-
-    if client_now_gold >= need_gold:
-        client_now_gold -= need_gold
-        if client_now_gold < 0:
-            # return JsonResponse(data={'status': 5005, 'msg': '积分不足'})
-            return False
-        consume_gold += need_gold
-        client.gold = client_now_gold
-        client.consume_gold = consume_gold
-        client.save()
-    return True
 
 
 '''
