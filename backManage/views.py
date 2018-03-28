@@ -25,7 +25,6 @@ from kuaishou_admin.models import Order_combo, Project, Client, MoneyAndGold
 
 logger = logging.getLogger("django_admin")
 
-
 @login_required
 def proManage(request):
     '''
