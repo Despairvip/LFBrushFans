@@ -177,8 +177,10 @@ zhouzhou xialing
 
 '''
 import home.views
-def combo_list():
-    return  home.views.remenTaocan()
+@login_admin_required_json
+def combo_list(request):
+    if request.method == "GET":
+        return  home.views.remenTaocan(request)
 
 
 
