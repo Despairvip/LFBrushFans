@@ -15,6 +15,8 @@ import time
 from hashlib import md5
 import time
 
+from sfpt.settings_base import SECRET_APP
+
 
 def hex2dec(string_num):
     return str(int(string_num.upper(), 16))
@@ -38,49 +40,46 @@ hashid = hashids.Hashids(alphabet=ALPHABET)
 
 def userid_to_secret(id):
     userid = id
+    count = 0
     s = hashid.encode(userid)
-    return s
-    # len_num = len(s) - len(dec2hex(hex2dec(s)))
-    # if len_num > 0:
-    #     result = '0'*len_num + dec2hex(hex2dec(s))
-    #     print(s)
-    #     print(userid,s,hex2dec(s),dec2hex(hex2dec(s)),hashid.decode(result))
-    #     return s
-    # else:
-    #     print(s)
-    #     print(userid,s,hex2dec(s),dec2hex(hex2dec(s)),hashid.decode(dec2hex(hex2dec(s))))
-    #     result = dec2hex(hex2dec(s))
-    #     return s
+
+    for i in s:
+        if i == '0':
+            count += 1
+        else:
+            break
+
+    if count > 0:
+        return 'C' + str(count) + hex2dec(s)
+    else:
+        return hex2dec(s)
 
 
 def secret_to_userid(secretid):
-    len_num = len(secretid) - len(dec2hex(hex2dec(secretid)))
-    if len_num > 0:
-        result = '0' * len_num + dec2hex(hex2dec(secretid))
-        return hashid.decode(result)[0]
+    if secretid.startswith('C'):
+        num_zero = secretid[1]
+
+        new_secretid = secretid[2:]
+        secretid_dec = dec2hex(new_secretid)
+
+        final_secretid = '0' * int(num_zero) + str(secretid_dec)
+
+        return hashid.decode(final_secretid)[0]
 
     else:
-        result = dec2hex(hex2dec(secretid))
-        return hashid.decode(result)[0]
-
-
-# res = userid_to_secret(1)
-# s = secret_to_userid(res)
-# print(type(s),s)
-
-# h = hashlib.md5()
-# print(time.time())
+        return hashid.decode(dec2hex(secretid))[0]
 
 
 def create_token(id):
     id_secret = userid_to_secret(id)
 
+    str_md = id_secret + str(time.time()) + SECRET_APP
     h1 = md5()
-    h1.update(id_secret.encode(encoding='utf-8'))
+    h1.update(str_md.encode(encoding='utf-8'))
 
     md_res = h1.hexdigest()
-    print(md_res + '-' + id_secret)
     return md_res + '-' + id_secret
 
 
-create_token(1)
+
+

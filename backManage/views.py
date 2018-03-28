@@ -18,8 +18,9 @@ from django.shortcuts import render
 
 
 # Create your views here.
-
+from backManage.core import create_token
 from backManage.libs_save_results import save_taocan_detail, update_taocan
+from backManage.permission import decorator_to_permission
 from common.returnMessage import MessageResponse
 from kuaishou_admin.models import Order_combo, Project, Client, MoneyAndGold
 
@@ -243,7 +244,7 @@ def taocanManage(request):
         else:
             return MessageResponse(3104)
 
-
+@decorator_to_permission('superadmin')
 @login_required
 def showTaocan(request):
     if request.method == "POST":
@@ -361,7 +362,12 @@ def login_houtai(request):
             # 保存用户登陆session信息
         request.session["name"] = user_name
         login(request, user)
-        return JsonResponse(data={"msg": True})
+
+        userid = request.user.id
+        token = create_token(userid)
+        request.user.token = token
+        request.user.save()
+        return MessageResponse(0,data=token)
     else:
         return JsonResponse({"msg": "please login"})
 
@@ -372,6 +378,7 @@ def index(request):
 
 
 
+@decorator_to_permission('superadmin')
 @login_required
 def set_gold_money(request):
     '''
@@ -466,6 +473,7 @@ def del_gold_money(request):
                     if moneyAndGold is None:
                         return MessageResponse(2002)
                     else:
+
                         moneyAndGold.delete()
                         return MessageResponse(0)
             else:
