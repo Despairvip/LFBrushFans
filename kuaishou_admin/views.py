@@ -174,6 +174,10 @@ def EnterSearchView(request):
 zhouzhou xialing
 
 '''
+import home.views
+def combo_list():
+    return  home.views.remenTaocan()
+
 
 
 @login_admin_required_json
