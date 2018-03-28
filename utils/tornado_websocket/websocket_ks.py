@@ -42,15 +42,15 @@ from kuaishou_admin.models import Client
 # Tag = "_auth_user_id"
 
 
-# TODO 需要验证身份才能使用
+
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
-    executor = ThreadPoolExecutor(10)
+    executor = ThreadPoolExecutor(100)
 
     def check_origin(self, origin):
         return True  # 允许WebSocket的跨域请求
 
     def open(self):
-
+        self.islogin = False
         self.status_close = False
 
     @run_on_executor
@@ -58,37 +58,35 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
 
         obj_msg = json.loads(message)
 
-        token = obj_msg.get("token")
+        if hasattr(self,"event_"+obj_msg["action"]):
+            getattr(self,"event_"+obj_msg["action"])(obj_msg)
+        else:
+            #no attr
+            pass
 
-        if token is not None:
-            self.init_data(token)
 
-        if obj_msg.get("action") == "HeartBeat":
-            self.test_heart()
-        if token is None:
-            self.write_message({"action": "noLogin"})
-
-    def init_data(self, token):
-
+    def event_init(self,obj):
+        token = obj.get("token")
         token = Client.objects.filter(token=token).first()
-
-        if token is not None:
+        if token:
             while not self.status_close:
-                self.write_message({"action": "test....."})
                 if self.status_close:
-                    self.status_close = True
                     break
                 obj = RedisHelper()
                 redis_sub = obj.subscribe()
                 data = redis_sub.get_message(True, 1)
                 if data:
                     self.write_message({"action": "order", "data": data})
+
         else:
             self.write_message({"action": "noLogin"})
+            time.sleep(1)
+            try:
+                self.close()
+            except Exception:
+                pass
 
-    def test_heart(self):
 
-        pass
 
     def on_close(self):
         self.status_close = True
