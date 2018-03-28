@@ -85,6 +85,7 @@ def ClickView(request):
             return JsonResponse(data={"status": 2004, "msg": "参数不全"})
         try:
             client_id = secret_to_userid(data.get("user_id"))
+
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
@@ -100,7 +101,6 @@ def ClickView(request):
 
         if works_link and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        
 
         try:
             client = Client.objects.filter(id=client_id).first()
@@ -348,6 +348,7 @@ def ConfirmView(request):
         if package_id and need_gold and works_link and kuaishou_id and client_id is None:
 
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
+
         try:
             client = Client.objects.filter(id=client_id).first()
             if client is None:
@@ -859,6 +860,7 @@ def ClientLoginView(request):
             user_id = content["user_id"]
 
             # 添加token
+
             my_token = create_token(user_id)
             return JsonResponse(data={"status": 0, 'data': content, "token": my_token})
         else:

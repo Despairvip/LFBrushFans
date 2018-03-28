@@ -60,15 +60,15 @@ def decorator_to_permission(arg):
 
         return wrapper
 
-def decorator_to_gold_permission(arg):
-    def wrapper(func):
-
-        def function(*args,**kwargs):
-
-
-            outcome = func(*args,**kwargs)
-
-            return outcome
-
-        return function
-    return wrapper
+# def decorator_to_gold_permission(arg):
+#     def wrapper(func):
+#
+#         def function(*args,**kwargs):
+#
+#
+#             outcome = func(*args,**kwargs)
+#
+#             return outcome
+#
+#         return function
+#     return wrapper
