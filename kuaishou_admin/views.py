@@ -3,6 +3,8 @@ from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from hashids import Hashids
+
+from backManage.core import secret_to_userid
 from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, Project
 import json
 from django.core.paginator import Paginator
@@ -198,7 +200,7 @@ def UserSearchView(request):
             content = users.to_dict()
             result.append(content)
         else:
-            return JsonResponse(data={"status" : 3103,"msg" : "输入有误"})
+            return JsonResponse(data={"status" : 3103,"msg":"输入有误"})
         return JsonResponse(data={"msg": result})
 
 
@@ -234,6 +236,7 @@ xialing
 '''
 
 
+
 @login_admin_required_json
 def ModifyGoldView(request):
     # 获取用户的id,和需要修改的金币数
@@ -241,9 +244,11 @@ def ModifyGoldView(request):
         data = json.loads(request.body.decode())
 
         user_id = data.get("user_id")
+        user_id_new = secret_to_userid(user_id)
+        print(user_id_new)
         gold_num = data.get("gold_num")
         try:
-            user = Client.objects.filter(id=user_id).update(gold=gold_num)
+            user = Client.objects.filter(id=user_id_new).update(gold=gold_num)
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"msg": "查不到用户"})
