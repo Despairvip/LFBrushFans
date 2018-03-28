@@ -95,15 +95,13 @@ def ClickView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
-        click_num = project.count_project
-        need_gold = project.pro_gold
 
         # 检验用户
 
         if works_link and project_id and client_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
         
-            return JsonResponse(data={"status": 2004})
+
         try:
             client = Client.objects.filter(id=client_id).first()
             if client is None:
@@ -155,8 +153,6 @@ def PlayView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         works_link = data.get('works')
-        # play_num = data.get('play_num')
-        # need_gold = data.get('gold')
         project_id = data.get('project_id')
 
         kuaishou_id = data.get('hands_id')
@@ -179,14 +175,11 @@ def PlayView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
-        play_num = project.count_project
-        need_gold = project.pro_gold
 
 
         if works_link and project_id and client_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        if len(str(client_id)) != 4:
-            return JsonResponse(data={"status": 2004})
+
         try:
             client = Client.objects.filter(id=client_id).first()
             if not client:
@@ -234,8 +227,6 @@ def FansView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         hands_id = data.get("hands_id")
-        # fan_num = data.get("fan_num")
-        # need_gold = int(data.get("gold"))
         project_id = data.get("project_id")
         token = data.get("token")
         # 序列化用户id
@@ -255,14 +246,12 @@ def FansView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
-        fan_num = project.count_project
-        need_gold = project.pro_gold
+
 
         if hands_id and client_id and hands_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
-        if len(str(client_id)) != 4:
-            return JsonResponse(data={"status": 2004})
+
         try:
             client = Client.objects.filter(id=client_id).first()
             if client is None:
@@ -326,7 +315,7 @@ def ConfirmView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
         package_id = data.get('package_id')
-        # need_gold = data.get('gold')
+
         works_link = data.get('works')
         kuaishou_id = data.get('hands_id')
 
@@ -359,8 +348,6 @@ def ConfirmView(request):
         if package_id and need_gold and works_link and kuaishou_id and client_id is None:
 
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
-        if len(str(client_id)) != 4:
-            return JsonResponse(data={"status": 2004})
         try:
             client = Client.objects.filter(id=client_id).first()
             if client is None:
