@@ -77,6 +77,7 @@ def ClickView(request):
 
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
+        print(project_id,type(project_id))
         # pro_id = data.get('pro_id') #用户点击的是双击项目里面的哪个具体双击数和积分  // 周周
         token = data.get("token")
 
@@ -113,8 +114,8 @@ def ClickView(request):
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token错误"})
 
-        project = Project.objects.filter(id=project_id).first()
-
+        # project = Project.objects.filter(id=project_id).first()
+        # print(project_id)
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
         click_num = project.count_project
@@ -266,7 +267,7 @@ def FansView(request):
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "token错误"})
 
-        project = Project.objects.filter(id=project_id).first()
+        # project = Project.objects.filter(id=project_id).first()
 
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
@@ -687,6 +688,8 @@ def CenterView(request):
         if user is None:
             return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
 
+        print(user.token)
+        print(token)
         if user.token != token:
             return JsonResponse(data={"status" : 2004 ,"msg" : "token错误"})
         content = user.to_dict()
