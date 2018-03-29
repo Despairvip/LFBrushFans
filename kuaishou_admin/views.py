@@ -4,7 +4,7 @@ from django.http import HttpResponse, JsonResponse
 from django.http import HttpResponseRedirect
 from hashids import Hashids
 
-from backManage.core import secret_to_userid
+from backManage.core import secret_to_userid, userid_to_secret
 from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, Project
 import json
 from django.core.paginator import Paginator
@@ -102,15 +102,31 @@ def OptionSearchView(request):
                 order_id = content['order_id']
                 hs_order_id = encrypt.encode(int(order_id))
                 content['order_id'] = hs_order_id
+                user_id = order.client_id
+                user_name = order.client.nickname
+                content['user_id'] = user_id
+                content['user_name'] = user_name
                 result.append(content)
+
             else:
+                pro_detail = []
 
                 content = order.to_dict()
                 content["project_name"] = order.combo.name
+                for detail in order.combo.project_detail.all():
+                    pro_detail.append({
+                        'project_name': detail.pro_name,
+                        'project_num': detail.count_project,
+                        'project_id': detail.id,
+                    })
                 order_id = content['order_id']
                 hs_order_id = encrypt.encode(int(order_id))
                 content['order_id'] = hs_order_id
-
+                content["ordered_num"] = pro_detail
+                user_id = order.client_id
+                user_name = order.client.nickname
+                content['user_id'] = userid_to_secret(user_id)
+                content['user_name'] = user_name
                 result.append(content)
         p = Paginator(result, num_page)
         count = p.count
@@ -181,6 +197,7 @@ import home.views
 def combo_list(request):
     if request.method == "GET":
         return  home.views.remenTaocan(request)
+
 
 
 

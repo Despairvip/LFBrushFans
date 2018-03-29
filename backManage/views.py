@@ -244,10 +244,10 @@ def taocanManage(request):
         else:
             return MessageResponse(3104)
 
-@decorator_to_permission('superadmin')
-@login_required
+# @decorator_to_permission('superadmin')
+# @login_required
 def showTaocan(request):
-    if request.method == "POST":
+    if request.method == "GET":
         user = request.session.get("name")
         try:
             user_client = Client.objects.filter(username=user).first()
@@ -276,6 +276,7 @@ def showTaocan(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
+                # return render(request,'debug_test/debug_test.html',locals())
                 return JsonResponse({"data": data[::-1]})
             else:
                 return MessageResponse(3105)

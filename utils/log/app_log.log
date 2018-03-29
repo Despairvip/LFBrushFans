@@ -105,3 +105,4 @@ ERROR 2018-03-28 09:59:37,958 (1054, "Unknown column 'version_num.sdk_url' in 'f
 ERROR 2018-03-28 09:59:38,298 (1054, "Unknown column 'version_num.sdk_url' in 'field list'")
 ERROR 2018-03-28 10:00:12,432 (1054, "Unknown column 'version_num.sdk_url' in 'field list'")
 ERROR 2018-03-28 10:00:13,520 (1054, "Unknown column 'version_num.sdk_url' in 'field list'")
+ERROR 2018-03-29 07:41:38,979 (1054, "Unknown column 'version_num.sdk_url' in 'field list'")
