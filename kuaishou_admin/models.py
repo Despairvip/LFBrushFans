@@ -21,7 +21,7 @@ class Client(AbstractUser):
     token = models.CharField(max_length=128, default='')
     unionid = models.CharField(max_length=128,default="")
     def __str__(self):
-        return self.name
+        return self.nickname
 
     def to_dict(self):
         dict = {

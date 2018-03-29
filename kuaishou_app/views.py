@@ -435,8 +435,12 @@ def IntegralView(request):
         if client or pay is None:
             return JsonResponse(data={'status': 4003, 'msg': "id或订单号出问题"})
 
+
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token"})
+
+        if client.first().token != token:
+            return JsonResponse(data={"status": 5003, "msg": "用户token出错"})
 
         # 支付宝支付
 
@@ -561,6 +565,7 @@ def PayApi(request):
         gold = data.get("gold")
         money = data.get("money")
         pay_type = data.get("pay_type")
+        token = data.get("token")
 
         # 金钱检测
         db_gold = MoneyAndGold.objects.values_list("gold", "money")
@@ -582,6 +587,11 @@ def PayApi(request):
 
         # 开启支付
         client = Client.objects.get(id=client_id)
+
+        if client.token != token:
+            return JsonResponse(data={"status" : 2004 ,"msg" : "token错误"})
+
+
         order_id = create_num(client_id, 1)
         try:
             if pay_type == 0:
@@ -653,7 +663,7 @@ xialing
 def CenterView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
-
+        token = data.get("token")
         # 序列化用户id
         if data.get("user_id") is None:
             return JsonResponse(data={"status": 2004, "msg": "参数不全"})
@@ -671,8 +681,12 @@ def CenterView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 5003, 'msg': "没有查到用户信息"})
+
         if user is None:
             return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
+
+        if user.token != token:
+            return JsonResponse(data={"status" : 2004 ,"msg" : "token错误"})
         content = user.to_dict()
 
         return JsonResponse(data={"status": 0, "data": content})
@@ -802,6 +816,7 @@ def ClientLoginView(request):
 
             # 处理用户
 
+
             client = Client.objects.filter(unionid=unionid).first()
             if client is not None:
                 client.token = token
@@ -810,10 +825,22 @@ def ClientLoginView(request):
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
 
-            client = Client(username=res_data_openid, nickname=client_name, avatar=avatar_url, token=token,
-                            unionid=unionid,
-                            )
-            client.save()
+            db_client = Client.objects.filter(unionid=unionid).first()
+            if db_client is not None:
+
+                db_client.token=token,
+                db_client.avatar=avatar_url,
+                db_client.nickname=client_name,
+
+                db_client.save()
+
+                return JsonResponse(data={"status": 0, "data": db_client.to_dict(), "token": token})
+
+            client = Client.objects.create(username=res_data_openid, nickname=client_name, avatar=avatar_url,
+                                           token=token,
+                                           unionid=unionid,
+                                           )
+
             # 第三方登录信息
             third_from = LoginFrom()
             third_from.client = client
@@ -822,8 +849,8 @@ def ClientLoginView(request):
             third_from.openid = res_data_openid
             ###
             content = client.to_dict()
-            user_id = content["user_id"]
-
+            hs_user_id = content["user_id"]
+            user_id = secret_to_userid(hs_user_id)
             # //
             # 添加token
             my_token = create_token(user_id)
@@ -839,6 +866,7 @@ def ClientLoginView(request):
                     token, oauth_consumer_key, openid)).json()
 
             avatar = res.get("figureurl_2")
+            print(avatar)
 
             nickname = res.get("nickname")
 
@@ -846,17 +874,19 @@ def ClientLoginView(request):
 
             client = Client.objects.filter(unionid=openid).first()
             if client is not None:
+
                 client.avatar = avatar
 
                 client.nickname = nickname
                 client.save()
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
+
             try:
-                client = Client(username=openid, nickname=nickname, avatar=avatar, unionid=openid,
-                                token=token)
-                client.save()
+                client = Client.objects.create(username=openid, nickname=nickname, avatar=avatar, unionid=openid,
+                                               token=token)
 
                 # 设置第三方登录信息
+
                 third_from = LoginFrom()
                 third_from.client = client
                 third_from.third_name = 'qq'
@@ -867,8 +897,21 @@ def ClientLoginView(request):
             except Exception as e:
                 return JsonResponse({"msg": "error"})
 
+            try:
+                third_from = LoginFrom.objects.create(
+                    client=client,
+                    third_name='qq',
+                    app_id='null',
+                    openid=openid,
+                )
+            except Exception as e:
+                logger.error(e)
+                return JsonResponse(data={"status": 2001, "msg": "第三方登录数据保存失败"})
+
+
             content = client.to_dict()
-            user_id = content["user_id"]
+            hs_user_id = content["user_id"]
+            user_id = secret_to_userid(hs_user_id)
 
             # 添加token
 
