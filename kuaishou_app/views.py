@@ -680,7 +680,8 @@ def CenterView(request):
 
         if user is None:
             return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
-
+        print(user.token)
+        print(token)
         if user.token != token:
             return JsonResponse(data={"status": 2004, "msg": "token错误"})
         content = user.to_dict()
@@ -780,6 +781,7 @@ def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
+
         type = data.get('type')
         if type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
@@ -814,13 +816,11 @@ def ClientLoginView(request):
 
             db_client = Client.objects.filter(unionid=unionid).first()
             if db_client is not None:
-                db_client.token = token,
-                db_client.avatar = avatar_url,
-                db_client.nickname = client_name,
+                user_id = db_client.id
+                my_token = create_token(user_id)
+                db_client.objects.update(token=my_token,avatar=avatar_url,nickname=client_name)
 
-                db_client.save()
-
-                return JsonResponse(data={"status": 0, "data": db_client.to_dict(), "token": token})
+                return JsonResponse(data={"status": 0, "data": db_client.to_dict(), "token": my_token})
 
             client = Client.objects.create(username=res_data_openid, nickname=client_name, avatar=avatar_url,
                                            token=token,
@@ -845,6 +845,7 @@ def ClientLoginView(request):
             # //
             # 添加token
             my_token = create_token(user_id)
+            client.objects.update(token=my_token)
 
             return JsonResponse(data={"status": 0, "data": content, "token": my_token})
         # qq登陆
@@ -865,12 +866,11 @@ def ClientLoginView(request):
 
             client = Client.objects.filter(unionid=openid).first()
             if client is not None:
-                client.avatar = avatar,
+                user_id = client.id
+                my_token = create_token(user_id)
+                client.objects.update(token=my_token, avatar=avatar, nickname=nickname)
 
-                client.nickname = nickname
-
-                client.save()
-                return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": token})
+                return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": my_token})
             try:
                 client = Client.objects.create(username=openid, nickname=nickname, avatar=avatar, unionid=openid,
                                                token=token)
