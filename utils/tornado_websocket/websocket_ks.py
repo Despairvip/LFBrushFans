@@ -3,23 +3,27 @@ ower:@shadoesmilezhou
 email:630551760@qq.com
 date:2018/3/19/下午7:14
 file:ccc.py
+('third_name', models.CharField(default='', max_length=20)),
 IDE:PyCharm
 '''
 
+import os
+import sys
+
+sys.path.append("/home/sfpt-server/")
+os.environ['DJANGO_SETTINGS_MODULE'] = 'sfpt.settings'  # 项目的settings
+from django.core.wsgi import get_wsgi_application
+
+application = get_wsgi_application()
+
 import base64
-import os, django
+import os
 
 import re
 from django.template import base
 
 from lib_redis import RedisHelper
-import sfpt
 import os
-
-# os.environ.update({"DJANGO_SETTINGS_MODULE": "sftp.settings"})
-#
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "sfpt.settings")  # project_name 项目名称
-django.setup()
 
 import json
 import time
@@ -42,7 +46,6 @@ from kuaishou_admin.models import Client
 # Tag = "_auth_user_id"
 
 
-
 class WebSocketHandler(tornado.websocket.WebSocketHandler):
     executor = ThreadPoolExecutor(100)
 
@@ -53,49 +56,44 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         self.islogin = False
         self.status_close = False
 
-
-
-    @run_on_executor
     def on_message(self, message):
+        print(message)
 
         obj_msg = json.loads(message)
-        print(obj_msg)
 
-        if hasattr(self,"event_"+obj_msg["action"]):
-            print(getattr(self,"event_"+obj_msg["action"]))
-            getattr(self,"event_"+obj_msg["action"])(obj_msg)
+        if hasattr(self, "event_" + obj_msg["action"]):
+            getattr(self, "event_" + obj_msg["action"])(obj_msg)
         else:
-            #no attr
+            # no attr
             print("no attr")
             pass
 
+    def event_HeartBeat(self, obj):
+        self.write_message({"action": "HeartBeat"})
 
-    def event_init(self,obj):
-        print("ws",self)
+    @run_on_executor
+    def event_init(self, obj):
+        print("ws", self)
         import json
 
         self.write_message(json.dumps(
             {'action': "start"}
         ))
-        print(33333)
 
         token = obj.get("token")
         token = Client.objects.filter(token=token).first()
-        if token:
+        if token and token.is_superuser:
             while not self.status_close:
-                print(11)
                 if self.status_close:
                     break
                 obj = RedisHelper()
                 redis_sub = obj.subscribe()
                 data = redis_sub.get_message(True, 1)
-                print(data)
                 if data:
                     data_new = json.loads(data.get("data").decode())
-                    print(type(data_new),data_new)
-                    self.write_message({"action":"order","data":data_new})
-                    print("***********")
+                    self.write_message({"action": "order", "data": data_new})
                     continue
+
 
         else:
             self.write_message({"action": "noLogin"})
@@ -104,8 +102,6 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
                 self.close()
             except Exception:
                 pass
-
-
 
     def on_close(self):
         self.status_close = True
