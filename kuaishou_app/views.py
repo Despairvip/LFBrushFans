@@ -128,7 +128,7 @@ def ClickView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": click_num,
-            "user_name": client.name,
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
@@ -200,7 +200,7 @@ def PlayView(request):
             "status_order": "未开始",
             "ordered_num": play_num,
 
-            "user_name": client.name,
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
@@ -274,7 +274,7 @@ def FansView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": fan_num,
-            "user_name": client.name,
+            "user_name": client.nickname,
             "work_links": hands_id,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
@@ -367,7 +367,7 @@ def ConfirmView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": '',
-            "user_name": client.name,
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": order_combo.name,
             "order_id": hs_order_id,
