@@ -131,7 +131,8 @@ def ClickView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": click_num,
-            "user_name": client_id,
+            "user_id":data.get("user_id"),
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
@@ -204,7 +205,8 @@ def PlayView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": play_num,
-            "user_name": client_id,
+            "user_id":data.get("user_id"),
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
@@ -280,8 +282,9 @@ def FansView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": fan_num,
-            "user_name": client_id,
-            "work_links": None,
+            "user_id":data.get("user_id"),
+            "user_name": client.nickname,
+            "work_links": hands_id,
             "project_name": project.pro_name,
             "order_id": hs_order_id_num,
             "kuaishou_id": hands_id,
@@ -368,13 +371,21 @@ def ConfirmView(request):
         hs_order_id = q.encode(int(order_id))
         # ------------订单处理--------------------
 
+        pro_detail = []
+        for detail in order_combo.project_detail.all():
+            pro_detail.append({
+                'project_name': detail.pro_name,
+                'project_num': detail.count_project,
+                'project_id': detail.id,
+            })
 
 
 
         msg = {
             "status_order": "未开始",
-            "ordered_num": '',
-            "user_name": client_id,
+            "ordered_num": pro_detail,
+            "user_id":data.get("user_id"),
+            "user_name": client.nickname,
             "work_links": works_link,
             "project_name": order_combo.name,
             "order_id": hs_order_id,
