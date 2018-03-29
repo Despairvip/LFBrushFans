@@ -320,6 +320,7 @@ def ConfirmView(request):
         if package_id and works_link and kuaishou_id is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
 
+
         # 序列化用户id
         if data.get("user_id") is None:
             return JsonResponse(data={"status": 2004, "msg": "参数不全"})
