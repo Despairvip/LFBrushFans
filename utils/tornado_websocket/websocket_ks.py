@@ -81,7 +81,9 @@ class WebSocketHandler(tornado.websocket.WebSocketHandler):
         ))
 
         token = obj.get("token")
+        print(token)
         token = Client.objects.filter(token=token).first()
+        print(token)
         if token and token.is_superuser:
             while not self.status_close:
                 if self.status_close:
