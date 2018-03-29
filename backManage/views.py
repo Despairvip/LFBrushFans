@@ -232,7 +232,7 @@ def taocanManage(request):
         if user_client is not None:
             if user_client.is_superuser:
                 data = json.loads(request.body.decode())
-                print(data)
+
                 result = save_taocan_detail(**data)
 
                 if result["status"] == 0:
@@ -366,8 +366,10 @@ def login_houtai(request):
 
         userid = request.user.id
         token = create_token(userid)
+        print(token)
         request.user.token = token
         request.user.save()
+        print(request.user.token)
         return MessageResponse(0,data=token)
     else:
         return JsonResponse({"msg": "please login"})

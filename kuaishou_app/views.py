@@ -74,6 +74,7 @@ def ClickView(request):
 
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
+        print(project_id,type(project_id))
         # pro_id = data.get('pro_id') #用户点击的是双击项目里面的哪个具体双击数和积分  // 周周
         token = data.get("token")
 
@@ -199,7 +200,7 @@ def PlayView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": play_num,
-
+            "user_id":data.get("user_id"),
             "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
@@ -274,6 +275,7 @@ def FansView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": fan_num,
+            "user_id": data.get("user_id"),
             "user_name": client.nickname,
             "work_links": hands_id,
             "project_name": project.pro_name,
@@ -361,12 +363,20 @@ def ConfirmView(request):
         hs_order_id = q.encode(int(order_id))
         # ------------订单处理--------------------
 
+        detail_cmo = []
+        for detail in order_combo.project_detail.all():
+            detail_cmo.append({
+                'project_name': detail.pro_name,
+                'project_num': detail.count_project,
+                'project_id': detail.id,
+            })
 
 
 
         msg = {
             "status_order": "未开始",
-            "ordered_num": '',
+            "ordered_num": detail_cmo,
+            "user_id": data.get("user_id"),
             "user_name": client.nickname,
             "work_links": works_link,
             "project_name": order_combo.name,
@@ -507,7 +517,7 @@ def notify(request, pay_type):
 
     elif pay_type == "wechat":
 
-        # //TODO
+
         # 获取xml
         xml = request.body
 
@@ -680,8 +690,7 @@ def CenterView(request):
 
         if user is None:
             return JsonResponse(data={"status": 5002, "msg": "用户id错误"})
-        print(user.token)
-        print(token)
+
         if user.token != token:
             return JsonResponse(data={"status": 2004, "msg": "token错误"})
         content = user.to_dict()
@@ -818,7 +827,7 @@ def ClientLoginView(request):
             if db_client is not None:
                 user_id = db_client.id
                 my_token = create_token(user_id)
-                db_client.objects.update(token=my_token,avatar=avatar_url,nickname=client_name)
+                Client.objects.filter(id=db_client.id).update(token=my_token,avatar=avatar_url,nickname=client_name)
 
                 return JsonResponse(data={"status": 0, "data": db_client.to_dict(), "token": my_token})
 
@@ -868,7 +877,7 @@ def ClientLoginView(request):
             if client is not None:
                 user_id = client.id
                 my_token = create_token(user_id)
-                client.objects.update(token=my_token, avatar=avatar, nickname=nickname)
+                Client.objects.filter(id=client.id).update(token=my_token, avatar=avatar, nickname=nickname)
 
                 return JsonResponse(data={"status": 0, "data": client.to_dict(), "token": my_token})
             try:

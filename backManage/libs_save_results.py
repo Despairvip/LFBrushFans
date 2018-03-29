@@ -29,6 +29,7 @@ def save_taocan_detail(**kwargs):
     try:
         taocan = Order_combo.objects.create(name=taocan_name,pro_gold=taocan_gold)
     except Exception as e:
+        taocan.delete()
         logger.error(e)
         return {"status":500,"msg":"创建套餐错误"}
 

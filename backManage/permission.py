@@ -43,8 +43,9 @@ def decorator_to_permission(arg):
                 if arg == "superadmin":
 
                     user = args[0].session.get("name")
-
+                    print(user)
                     user_client = Client.objects.filter(username=user).first()
+
                     if user_client is not None:
                         if user_client.is_superuser and user in SUPERADMIN:
                             outcome = func(*args, **kw)
