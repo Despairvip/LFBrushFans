@@ -17,11 +17,11 @@ class PayListModel(models.Model):
 
     order_id = models.CharField("订单号",max_length=200)
     ddh = models.CharField("支付平台订单号",max_length=100,default="")
-    client = models.ForeignKey(Client,null=True,on_delete=models.CASCADE)
+    client = models.ForeignKey(Client,null=True,on_delete=models.CASCADE,related_name="pay_order")
     money = models.DecimalField("支付金额", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))   # 理应收钱
     pay_list_date = models.DateTimeField(auto_now_add=True)
     order_type = models.IntegerField("订单类型",choices=choices_ordertype,default=0)
-    Amount_money = models.DecimalField("支付金额", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))  # 实际收钱
+    Amount_money = models.DecimalField("用户真正支付金额", max_digits=19, decimal_places=10, default=decimal.Decimal('0.0'))  # 实际收钱
     trade_no = models.CharField("支付宝流水号",max_length=200,default="")
 
     pay_type = models.IntegerField("支付类型",choices=choices_pay_type,default=1)

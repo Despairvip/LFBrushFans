@@ -9,9 +9,9 @@ from kuaishou_admin.models import Order, Client, AdminManagement, CheckVersion, 
 import json
 from django.core.paginator import Paginator
 
-
 # Create your views here.
 from utils.views import login_admin_required_json, expired_message
+
 expired_message()
 encrypt = Hashids()
 logger = logging.getLogger("django_admin")
@@ -177,9 +177,10 @@ zhouzhou xialing
 
 '''
 import home.views
-def combo_list():
-    return  home.views.remenTaocan()
 
+
+def combo_list():
+    return home.views.remenTaocan()
 
 
 @login_admin_required_json
@@ -199,12 +200,11 @@ def UserSearchView(request):
             user_name = data.get("user_name")
             users = Client.objects.get(name=user_name)
 
-
         if users:
             content = users.to_dict()
             result.append(content)
         else:
-            return JsonResponse(data={"status" : 3103,"msg":"输入有误"})
+            return JsonResponse(data={"status": 3103, "msg": "输入有误"})
         return JsonResponse(data={"msg": result})
 
 
@@ -238,7 +238,6 @@ def ModifyStatusView(request):
 xialing
 
 '''
-
 
 
 @login_admin_required_json
@@ -307,9 +306,8 @@ def add_wechat(request):
                 if admin.isdelete == 0:
                     return JsonResponse(data={"status": 0, "msg": "此微信号已添加"})
             try:
-                admins = AdminManagement()
-                admins.wechat = wechat_id
-                admins.save()
+                admins = AdminManagement.objects.create(wechat=wechat_id)
+
             except Exception as e:
                 logger.error(e)
                 return JsonResponse(data={"status": 4001, "msg": "修改错误"})
@@ -343,18 +341,19 @@ def new_version_update(request):
 
     try:
         version_query = CheckVersion.objects.first()
-        if version_query is None :
-            version = CheckVersion()
-            version.version = version_code
-            version.sdk_url = sdk_url
-            version.upupdate_msg = update_msg
-            version.save()
+        if version_query is None:
+            version = CheckVersion.objects.create(
+                version=version_code,
+                sdk_url=sdk_url,
+                upupdate_msg=update_msg,
+            )
+
             return JsonResponse(data={"status": 0, "msg": "添加成功"})
 
     except Exception as e:
 
         logger.error(e)
-        return JsonResponse(data={"status" : 2103,"msg" : "输入错误"})
+        return JsonResponse(data={"status": 2103, "msg": "输入错误"})
     try:
         CheckVersion.objects.update(version=version_code, sdk_url=sdk_url, update_msg=update_msg)
 
@@ -378,5 +377,3 @@ def all_project(request):
     for a in content:
         result.append(a)
     return JsonResponse(data={"status": 0, "data": result})
-
-

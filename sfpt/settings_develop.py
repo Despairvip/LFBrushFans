@@ -12,7 +12,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'LFBrushFans',
         'USER': 'root',
-        'PASSWORD':"",
+        'PASSWORD':"mysql",
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
