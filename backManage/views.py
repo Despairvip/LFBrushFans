@@ -38,7 +38,7 @@ def proManage(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -50,7 +50,7 @@ def proManage(request):
                 try:
                     proj = Project.objects.filter(pro_name=proName, pro_gold=gold, count_project=proNum).first()
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return MessageResponse(2001)
                 if proj is not None:
                     return MessageResponse(2003)
@@ -74,7 +74,7 @@ def changeProManage(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -87,7 +87,7 @@ def changeProManage(request):
                 try:
                     project = Project.objects.filter(id=id).first()
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return MessageResponse(2001)
                 if project is None:
                     return MessageResponse(2002)
@@ -114,7 +114,7 @@ def ShowAll(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -196,7 +196,7 @@ def deleteProject(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -205,7 +205,7 @@ def deleteProject(request):
                 try:
                     project = Project.objects.filter(id=project_id).first()
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return MessageResponse(2002)
                 if project is None:
                     return MessageResponse(2002)
@@ -229,7 +229,7 @@ def taocanManage(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -254,14 +254,14 @@ def showTaocan(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
                 try:
                     taocans = Order_combo.objects.all().prefetch_related('project_detail')
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return {"status":500,"msg":"查询失败"}
                 data = []
                 for taocan in taocans:
@@ -293,7 +293,7 @@ def changeTaocan(request):
         try:
             user_client = Client.objects.filter(username=user).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         if user_client is not None:
             if user_client.is_superuser:
@@ -330,7 +330,7 @@ def deleteTaocan(request):
                 try:
                     taocan = Order_combo.objects.filter(id=taocan_id).first()
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return MessageResponse(2001)
                 if taocan is None:
                     return MessageResponse(2002,msg="套餐是空的")
@@ -405,7 +405,7 @@ def set_gold_money(request):
                     try:
                         moneyAndGold = MoneyAndGold.objects.get_or_create(money=money,gold=gold)
                     except Exception as e:
-                        logger.error(e)
+                        logger.error(e, exc_info=1)
                         return MessageResponse(2001)
 
                     if moneyAndGold[1] is False:
@@ -421,7 +421,7 @@ def set_gold_money(request):
                         return MessageResponse(0, data=data_list)
 
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return MessageResponse(2001)
             else:
                 return MessageResponse(3105)
@@ -440,7 +440,7 @@ def show_gold_money(request):
         try:
             moneyAndGold = MoneyAndGold.objects.order_by("money")
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         else:
 
@@ -473,7 +473,7 @@ def del_gold_money(request):
                     try:
                         moneyAndGold = MoneyAndGold.objects.filter(id=id).first()
                     except Exception as e:
-                        logger.error(e)
+                        logger.error(e, exc_info=1)
                         return MessageResponse(2001)
                     if moneyAndGold is None:
                         return MessageResponse(2002)

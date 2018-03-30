@@ -96,7 +96,7 @@ def shuangji_page(request):
     try:
         clicks = Project.objects.filter(pro_name="双击").all()
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=1)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
     if clicks:
@@ -112,7 +112,7 @@ def remenTaocan(request):
         try:
             taocans = Order_combo.objects.all().prefetch_related('project_detail')
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
 
         data = []
@@ -140,7 +140,7 @@ def shuafenshi(request):
     try:
         fans = Project.objects.filter(pro_name='粉丝').all()
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=1)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
 
@@ -156,7 +156,7 @@ def play_home_page(request):
     try:
         fans = Project.objects.filter(pro_name='播放').all()
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=1)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     content = []
     if fans:

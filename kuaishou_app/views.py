@@ -51,7 +51,7 @@ def show_gold_money(request):
         try:
             moneyAndGold = MoneyAndGold.objects.order_by("money")
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return MessageResponse(2001)
         else:
 
@@ -86,14 +86,14 @@ def ClickView(request):
             client_id = secret_to_userid(data.get("user_id"))
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
         # 项目金币、数量
         try:
             project = Project.objects.get(id=project_id)
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
 
         # 检验用户
@@ -106,7 +106,7 @@ def ClickView(request):
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, "msg": "error"})
 
         if client.token != token:
@@ -164,7 +164,7 @@ def PlayView(request):
             user_id = data.get("user_id")
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
             # 项目金币、数量
@@ -172,7 +172,7 @@ def PlayView(request):
             project = Project.objects.get(id=project_id)
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
 
         if works_link and project_id and client_id is None:
@@ -183,7 +183,7 @@ def PlayView(request):
             if not client:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, "msg": "error"})
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "token验证失败"})
@@ -233,7 +233,7 @@ def FansView(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
             # 判断金币
@@ -242,7 +242,7 @@ def FansView(request):
             project = Project.objects.get(id=project_id)
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 2001, "msg": "项目不存在"})
 
         if hands_id and client_id and hands_id is None:
@@ -255,7 +255,7 @@ def FansView(request):
             if client.token != token:
                 return JsonResponse(data={"status": 5003, "msg": "token验证不通过"})
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, "msg": "error"})
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "token错误"})
@@ -303,7 +303,7 @@ def FansView(request):
 
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, 'msg': "error"})
 
         return JsonResponse(data={'status': 0, 'order_num': hs_order_id_num})
@@ -329,7 +329,7 @@ def ConfirmView(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         # 判断金币
@@ -337,7 +337,7 @@ def ConfirmView(request):
             combo = Order_combo.objects.get(id=package_id)
 
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 2004, "msg": "套餐不存在"})
         need_gold = combo.pro_gold
 
@@ -350,7 +350,7 @@ def ConfirmView(request):
             if client is None:
                 return JsonResponse(data={"status": 5001, "msg": "用户未登录"})
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, "msg": "error"})
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token"})
@@ -415,14 +415,14 @@ def IntegralView(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         try:
             client = Client.objects.filter(id=client_id)
             pay_order = PayListModel.objects.filter(order_id=order_id).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={'status': 4001, "msg": "error"})
         if pay_order is None:
             return JsonResponse(data={'status': 4003, 'msg': "订单号出问题"})
@@ -448,7 +448,7 @@ def IntegralView(request):
                     success_client = client.update(gold=F('gold') + gold)
 
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return JsonResponse(data={"status": 2001, "msg": "积分修改失败"})
                 return JsonResponse(data={"status": 0, "msg": "充值成功"})
 
@@ -460,7 +460,7 @@ def IntegralView(request):
                 #     try:
                 #         pay_order = PayListModel.objects.filter(order_id=order_id).firest()
                 #     except Exception as e:
-                #         logger.error(e)
+                #         logger.error(e, exc_info=1)
                 #         return JsonResponse(data={"status" :2001 ,"msg" :"数据获取错误"})
                 #     if pay_order is None:
                 #         return JsonResponse(data={"status" : 2004,"msg" : "订单不存在"})
@@ -471,7 +471,7 @@ def IntegralView(request):
                 #             pay_order.client.gold += gold
                 #
                 #         except Exception as e:
-                #             logger.error(e)
+                #             logger.error(e, exc_info=1)
                 #             return JsonResponse(data={"status" : 2001,"msg" : "积分修改失败"})
                 #         return JsonResponse(data={"status" : 0,"msg" : "充值成功"})
 
@@ -507,7 +507,7 @@ def notify(request, pay_type):
                     trade_no=trade_no,
                 )
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return HttpResponse("err")
 
             if money_order.money != total_amount:
@@ -543,7 +543,7 @@ def notify(request, pay_type):
                     trade_no=wechat_pay_id,
                 )
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return JsonResponse(data={"return_code": "SUCCESS", "return_msg": "OK"})
             if money_order.money != user_money:
                 return JsonResponse(data={"return_code": "error", "return_msg": "-1"})
@@ -582,7 +582,7 @@ def PayApi(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
         # 用户校验
         if client_id and money and pay_type is None:
@@ -620,7 +620,7 @@ def PayApi(request):
                         ddh=pay_num
                     )
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return JsonResponse(data={"status": 2001, "msg": "创建预支付订单失败"})
 
                 hs_order_id = q.encode(int(order_id))
@@ -651,13 +651,13 @@ def PayApi(request):
                     )
 
                 except Exception as e:
-                    logger.error(e)
+                    logger.error(e, exc_info=1)
                     return JsonResponse(data={"status": 2001, "msg": "创建预支付订单失败"})
 
                 hs_order_id = q.encode(int(order_id))
                 return JsonResponse(data={"status": 0, "wechat_msg": payment, "order_id": hs_order_id})
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse({"status": 3001, 'msg': "异常重新尝试"})
 
 
@@ -678,7 +678,7 @@ def CenterView(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         if client_id is None:
@@ -687,7 +687,7 @@ def CenterView(request):
         try:
             user = Client.objects.filter(id=client_id).first()
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 5003, 'msg': "没有查到用户信息"})
 
         if user is None:
@@ -718,7 +718,7 @@ def DownloadView(request):
         try:
             photoId = re.search(r'photoId=(\d+)', works).group(1)
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4003, "msg": "格式错误"})
 
         hs_link = down.photo_info(photoId)
@@ -744,7 +744,7 @@ def NotesView(request):
         try:
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 3104, "msg": "用户不存在"})
 
         page = data.get("page", 1)
@@ -756,7 +756,7 @@ def NotesView(request):
         try:
             orders = Order.objects.filter(client__id__exact=client_id).all().order_by("-create_date")
         except Exception as e:
-            logger.error(e)
+            logger.error(e, exc_info=1)
             return JsonResponse(data={"status": 4001, 'msg': "error"})
         content = []
         if orders:
@@ -847,7 +847,7 @@ def ClientLoginView(request):
                     openid=res_data_openid,
                 )
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return JsonResponse(data={"status": 2001, "msg": "第三方登录数据保存失败"})
             ###
             content = client.to_dict()
@@ -887,7 +887,7 @@ def ClientLoginView(request):
                                                token=token)
 
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return JsonResponse({"msg": "error"})
                 # 设置第三方登录信息
             try:
@@ -898,7 +898,7 @@ def ClientLoginView(request):
                     openid=openid,
                 )
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return JsonResponse(data={"status": 2001, "msg": "第三方登录数据保存失败"})
 
             content = client.to_dict()
@@ -931,7 +931,7 @@ def check_update(request):
         version = version_set.version
 
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=1)
         return JsonResponse(data={"status": 4001, "msg": "获取失败"})
 
     new_version = LooseVersion(str(version))
@@ -966,7 +966,7 @@ def admin_id(request):
     try:
         admin_ids = AdminManagement.objects.all()
     except Exception as e:
-        logger.error(e)
+        logger.error(e, exc_info=1)
         return JsonResponse(data={"status": 4001, "msg": "数据库查询失败"})
     if admin_ids is None:
         return JsonResponse(data={"status": 4001, "msg": "没有数据"})

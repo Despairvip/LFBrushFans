@@ -340,7 +340,7 @@ def add_wechat(request):
             try:
                 admin_set.delete()
             except Exception as e:
-                logger.error(e)
+                logger.error(e, exc_info=1)
                 return JsonResponse(data={"status": 2001, "msg": "操作失败"})
             return JsonResponse(data={"status": 0})
         else:
