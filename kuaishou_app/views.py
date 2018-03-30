@@ -5,6 +5,7 @@ from distutils.version import LooseVersion
 
 from django.db.models import F
 
+
 import redis
 import requests
 from django.http import HttpResponse
@@ -392,6 +393,7 @@ def ConfirmView(request):
         except Exception as e:
             logger.error(e)
             return JsonResponse(data={"status": 2004, "msg": "创建订单失败"})
+
         return JsonResponse({'status': 0, 'order_num': hs_order_id})
 
 
