@@ -3,6 +3,7 @@ import logging
 from django.http import JsonResponse
 
 # Create your views here.
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 
 from common.returnMessage import MessageResponse
@@ -130,7 +131,7 @@ def remenTaocan(request):
                 })
 
             data.append(taocan_msg)
-
+        # return render(request,'debug_test/debug_test.html',locals())
         return JsonResponse({"status": 0, "data": data})
 
 

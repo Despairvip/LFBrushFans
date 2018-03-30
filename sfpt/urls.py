@@ -43,7 +43,13 @@ urlpatterns = [
     url(r'^setGold',views.set_gold_money),
     url(r'^delGold',views.del_gold_money),
 ]
-# from django.conf import settings
-# if settings.DEBUG:
-#     import debug_toolbar
-#     urlpatterns.append(url(r'^__debug__/', include(debug_toolbar.urls)))
+
+"""
+django_debug_tool_bar配置
+当DEBUG=True 时生效
+"""
+
+from django.conf import settings
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns.append(url(r'^__debug__/', include(debug_toolbar.urls)))

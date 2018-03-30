@@ -5,6 +5,7 @@ import re
 from distutils.version import LooseVersion
 
 from django.db.models import F
+from django.shortcuts import render
 from django.views.generic.base import TemplateResponseMixin
 
 import redis
@@ -390,6 +391,7 @@ def ConfirmView(request):
         order = Order.objects.create(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
                                      link_works=works_link, order_id_num=order_id, count_init=0, type_id=1)
 
+        # return render(request,'debug_test/debug_test.html',locals())
         return JsonResponse({'status': 0, 'order_num': hs_order_id})
 
 

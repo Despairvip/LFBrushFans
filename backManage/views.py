@@ -145,6 +145,7 @@ def ShowAll(request):
                             'project_id': detail.id,
                         })
                     data.append(taocan_msg)
+
                 return MessageResponse(0, data=data)
             else:
                 return MessageResponse(3105)
@@ -152,7 +153,7 @@ def ShowAll(request):
             return MessageResponse(3104)
 
 
-# @login_required
+@login_required
 def showProject(request):
     """
     显示全部项目
@@ -175,6 +176,7 @@ def showProject(request):
                     pro_msg['detail']['num'] = project.count_project
                     pro_msg['gold'] = project.pro_gold
                     data.append(pro_msg)
+
                 return JsonResponse({"status": 0, "data": data})
             else:
                 return JsonResponse({"status": 500, "msg": "you are not superuser"})
@@ -245,7 +247,7 @@ def taocanManage(request):
             return MessageResponse(3104)
 
 # @decorator_to_permission('superadmin')
-# @login_required
+@login_required
 def showTaocan(request):
     if request.method == "GET":
         user = request.session.get("name")
@@ -452,7 +454,7 @@ def show_gold_money(request):
                 data.append(data_dict)
 
             return MessageResponse(0,data=data)
-
+@decorator_to_permission('superadmin')
 @login_required
 def del_gold_money(request):
     """
