@@ -1,19 +1,16 @@
 import json
 import logging
-import random
 import re
 from distutils.version import LooseVersion
 
 from django.db.models import F
-from django.views.generic.base import TemplateResponseMixin
 
 import redis
 import requests
 from django.http import HttpResponse
-from django.http import HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 
-from backManage.core import userid_to_secret, create_token, secret_to_userid
+from backManage.core import  create_token, secret_to_userid
 from common.returnMessage import MessageResponse
 from sfpt import settings
 
@@ -22,7 +19,7 @@ from django.http import JsonResponse
 from hashids import Hashids
 
 from kuaishou_admin.models import Project, Client, Order, Order_combo, CheckVersion, AdminManagement, MoneyAndGold, \
-    LoginFrom, Combo_project
+    LoginFrom
 from kuaishou_app.models import PayListModel
 from utils.tornado_websocket.lib_redis import RedisHelper
 from utils.views import createOrdernumber as create_num, gifshow, Create_alipay_order as create_alipay, \
@@ -74,7 +71,7 @@ def ClickView(request):
 
         kuaishou_id = data.get('hands_id')
         project_id = data.get('project_id')
-        print(project_id,type(project_id))
+        print(project_id, type(project_id))
         # pro_id = data.get('pro_id') #用户点击的是双击项目里面的哪个具体双击数和积分  // 周周
         token = data.get("token")
 
@@ -111,8 +108,6 @@ def ClickView(request):
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "用户token错误"})
 
-        # project = Project.objects.filter(id=project_id).first()
-
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
         click_num = project.count_project
@@ -140,8 +135,13 @@ def ClickView(request):
         obj = RedisHelper()
 
         obj.public(msg_json)
-        order = Order.objects.create(gold=need_gold, client=client, kuaishou_id=kuaishou_id, link_works=works_link,
-                                     count_init=click_num, project=project, order_id_num=order_id)
+        try:
+            Order.objects.create(gold=need_gold, client=client, kuaishou_id=kuaishou_id, link_works=works_link,
+                                 count_init=click_num, project=project, order_id_num=order_id)
+
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse(data={"status": 4001, "msg": "参数错误，订单创建失败"})
         return JsonResponse(data={'status': 0, "order_num": hs_order_id_num})
 
 
@@ -160,7 +160,6 @@ def PlayView(request):
         if data.get("user_id") is None:
             return JsonResponse(data={"status": 2004, "msg": "参数不全"})
         try:
-            user_id = data.get("user_id")
             client_id = secret_to_userid(data.get("user_id"))
         except Exception as e:
             logger.error(e, exc_info=1)
@@ -200,7 +199,7 @@ def PlayView(request):
         msg = {
             "status_order": "未开始",
             "ordered_num": play_num,
-            "user_id":data.get("user_id"),
+            "user_id": data.get("user_id"),
             "user_name": client.nickname,
             "work_links": works_link,
             "project_name": project.pro_name,
@@ -211,11 +210,14 @@ def PlayView(request):
         msg_json = json.dumps(msg)
         obj = RedisHelper()
         obj.public(msg_json)
+        try:
+            Order.objects.create(order_id_num=order_id, gold=need_gold, project=project, client=client,
+                                 count_init=play_num,
+                                 link_works=works_link, kuaishou_id=kuaishou_id)
 
-        order = Order.objects.create(order_id_num=order_id, gold=need_gold, project=project, client=client,
-                                     count_init=play_num,
-                                     link_works=works_link, kuaishou_id=kuaishou_id)
-
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse(data={"status": 4001, "msg": "参数错误，订单创建失败"})
         return JsonResponse(data={'status': 0, "order_id": hs_order_id_num})
 
 
@@ -259,8 +261,6 @@ def FansView(request):
         if client.token != token:
             return JsonResponse(data={"status": 5003, "msg": "token错误"})
 
-        # project = Project.objects.filter(id=project_id).first()
-
         if project is None:
             return JsonResponse(data={'status': 5003, 'msg': '项目错误'})
 
@@ -288,7 +288,7 @@ def FansView(request):
         obj.public(msg_json)
         # 创建订单
         try:
-            order = Order.objects.create(
+            Order.objects.create(
                 client=client,
                 project=project,
                 gold=need_gold,
@@ -371,8 +371,6 @@ def ConfirmView(request):
                 'project_id': detail.id,
             })
 
-
-
         msg = {
             "status_order": "未开始",
             "ordered_num": detail_cmo,
@@ -387,9 +385,13 @@ def ConfirmView(request):
         msg_json = json.dumps(msg)
         obj = RedisHelper()
         obj.public(msg_json)
-        order = Order.objects.create(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
-                                     link_works=works_link, order_id_num=order_id, count_init=0, type_id=1)
+        try:
+            Order.objects.create(gold=need_gold, combo=order_combo, client=client, kuaishou_id=kuaishou_id,
+                                 link_works=works_link, order_id_num=order_id, count_init=0, type_id=1)
 
+        except Exception as e:
+            logger.error(e)
+            return JsonResponse(data={"status": 2004, "msg": "创建订单失败"})
         return JsonResponse({'status': 0, 'order_num': hs_order_id})
 
 
@@ -443,7 +445,7 @@ def IntegralView(request):
                 return JsonResponse(data={"status": 2004, "msg": "订单不存在"})
             if pay_order.status == 1:
                 try:
-                    success_client = client.update(gold=F('gold') + gold)
+                    client.update(gold=F('gold') + gold)
 
                 except Exception as e:
                     logger.error(e, exc_info=1)
@@ -516,7 +518,6 @@ def notify(request, pay_type):
             return HttpResponse("err")
 
     elif pay_type == "wechat":
-
 
         # 获取xml
         xml = request.body
@@ -610,7 +611,7 @@ def PayApi(request):
                 # print(pay_num)
                 # 创建支付订单
                 try:
-                    pay_order = PayListModel.objects.create(
+                    PayListModel.objects.create(
                         order_id=order_id,
                         client=client,
                         money=money,
@@ -641,7 +642,7 @@ def PayApi(request):
 
                 # 保存交易信息
                 try:
-                    pay_order = PayListModel.objects.create(
+                    PayListModel.objects.create(
                         order_id=order_id,
                         id=client_id,
                         money=money,
@@ -790,7 +791,6 @@ def ClientLoginView(request):
     if request.method == "POST":
         data = json.loads(request.body.decode())
 
-
         type = data.get('type')
         if type is None:
             return JsonResponse(data={"status": 3103, "msg": "参数不全"})
@@ -801,7 +801,8 @@ def ClientLoginView(request):
             appid = 'wx5f4ea0928a45436d'
             if code is not None:
                 res = requests.get(
-                    'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type=authorization_code' % (
+                    'https://api.weixin.qq.com/sns/oauth2/access_token?appid=%s&secret=%s&code=%s&grant_type'
+                    '=authorization_code' % (
                         appid, secret, code))
             else:
                 return JsonResponse(data={"status": 4003, "msg": 'code错误'})
@@ -827,7 +828,7 @@ def ClientLoginView(request):
             if db_client is not None:
                 user_id = db_client.id
                 my_token = create_token(user_id)
-                Client.objects.filter(id=db_client.id).update(token=my_token,avatar=avatar_url,nickname=client_name)
+                Client.objects.filter(id=db_client.id).update(token=my_token, avatar=avatar_url, nickname=client_name)
 
                 return JsonResponse(data={"status": 0, "data": db_client.to_dict(), "token": my_token})
 
@@ -838,7 +839,7 @@ def ClientLoginView(request):
 
             # 第三方登录信息
             try:
-                third_from = LoginFrom.objects.create(
+                LoginFrom.objects.create(
                     client=client,
                     third_name="wechat",
                     app_id=appid,
@@ -889,7 +890,7 @@ def ClientLoginView(request):
                 return JsonResponse({"msg": "error"})
                 # 设置第三方登录信息
             try:
-                third_from = LoginFrom.objects.create(
+                LoginFrom.objects.create(
                     client=client,
                     third_name='qq',
                     app_id='null',

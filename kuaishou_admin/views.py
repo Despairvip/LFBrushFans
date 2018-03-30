@@ -293,12 +293,13 @@ def UserListView(request):
     # if not request.user.is_superuser:
     #     return JsonResponse(data={"msg": "未登录"})
     if request.method == "POST":
-        users = Client.objects.all().order_by('-gold')
+        users = Client.objects.all().order_by('-id')
         content = []
         if users is not None:
             for user in users:
-                result = user.to_dict()
-                content.append(result)
+                if not user.is_superuser:
+                    result = user.to_dict()
+                    content.append(result)
         else:
             return JsonResponse(data={"msg": "没有查到用户信息"})
         p = Paginator(content, 30)
