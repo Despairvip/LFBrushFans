@@ -485,7 +485,7 @@ def IntegralView(request):
 
 @csrf_exempt
 def notify(request, pay_type):
-    data = request.POST.dict()
+    data = request.POST
 
     if pay_type == "alipay":
         # 签名认证 返回结果给支付宝
