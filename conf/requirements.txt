@@ -15,6 +15,6 @@ redis==2.10.6
 requests==2.18.4
 six==1.11.0
 tornado==4.5.3
-urllib3==1.22
+urllib3==1.26.5
 wechatpy==1.6.0
 xmltodict==0.11.0
